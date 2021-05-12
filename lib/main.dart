@@ -25,7 +25,7 @@ SharedPreferences prefs;
 
 void callback() async {
   Workmanager().executeTask((taskName, inputData) async {
-    await http.get(Uri.parse("http://192.168.133.1:5000"));
+    //await http.get(Uri.parse("http://192.168.133.1:5000"));
     print("Hello");
     // if (await Vibration.hasCustomVibrationsSupport()) {
     //   Vibration.vibrate(duration: 1000);
@@ -41,7 +41,6 @@ void callback() async {
 }
 
 Future<void> main() async {
-  // TODO(bkonyi): uncomment
   WidgetsFlutterBinding.ensureInitialized();
 
   Workmanager().initialize(callback, isInDebugMode: true);
@@ -68,8 +67,8 @@ class JabAlarmApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'JabAlarm',
-      home: JabAlarm()
+      home: JabAlarm(),
+      theme: ThemeData(fontFamily: "Inter", primaryColor: Color(0xff0A6CFF)),
     );
   }
 }
-

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:vaccine_slot_notifier/tabs/alarms.dart';
 import 'package:vaccine_slot_notifier/tabs/home.dart';
 import 'package:vaccine_slot_notifier/tabs/settings.dart';
 
@@ -23,7 +24,7 @@ class _JabAlarmState extends State<JabAlarm> {
               _currentIndex = pageNum;
             });
           },
-          children: [HomeTab(), SettingsTab()],
+          children: [HomeTab(), SettingsTab(), AlarmsTab()],
         ),
         bottomNavigationBar: Container(
           height: 64,
@@ -37,6 +38,7 @@ class _JabAlarmState extends State<JabAlarm> {
             },
             backgroundColor: Color(0xffF5F7FA),
             elevation: 0,
+            currentIndex: _currentIndex,
             items: [
               BottomNavigationBarItem(
                   icon: Icon(
@@ -44,6 +46,12 @@ class _JabAlarmState extends State<JabAlarm> {
                     size: 28,
                   ),
                   title: Text("Home", style: TextStyle(fontSize: 17))),
+              BottomNavigationBarItem(
+                  icon: Icon(
+                    Icons.alarm,
+                    size: 28,
+                  ),
+                  title: Text("Alarms", style: TextStyle(fontSize: 17))),
               BottomNavigationBarItem(
                   icon: Icon(
                     Icons.settings,
