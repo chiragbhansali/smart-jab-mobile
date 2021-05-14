@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
+import 'package:vaccine_slot_notifier/views/available/index.dart';
 
 class HomeTab extends StatefulWidget {
   @override
@@ -19,9 +20,9 @@ class _HomeTabState extends State<HomeTab> {
         centerTitle: true,
         title: Text("Find My Jab",
             style: TextStyle(
-                color: Colors.black,
+                color: Color(0xff323F4B),
                 fontWeight: FontWeight.w500,
-                fontSize: 18)),
+                fontSize: 20)),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -116,27 +117,43 @@ class PincodeTab extends StatefulWidget {
 }
 
 class _PincodeTabState extends State<PincodeTab> {
-  bool eighteenPlus = true;
-  bool fortyfivePlus = true;
-  bool covaxine = true;
-  bool covishield = true;
-
   @override
   Widget build(BuildContext context) {
+    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    var pincode;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 27),
       margin: EdgeInsets.only(top: 40),
       child: Column(
         children: [
-          TextField(
-              decoration: InputDecoration(
-                  labelText: "Enter your Pin Code",
-                  fillColor: Color(0xffF5F7FA),
-                  filled: true,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      borderSide:
-                          BorderSide(width: 4, color: Color(0xffE4E7EB))))),
+          Form(
+            key: _formKey,
+            child: TextFormField(
+                initialValue: pincode,
+                onChanged: (value) {
+                  pincode = value;
+                },
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return "Please enter a PIN code";
+                  } else if (value.length != 6) {
+                    return "Invalid PIN Code";
+                  } else {
+                    return null;
+                  }
+                },
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                    errorStyle: TextStyle(fontSize: 16),
+                    labelText: "Enter your PIN Code",
+                    fillColor: Color(0xffF5F7FA),
+                    filled: true,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide:
+                            BorderSide(width: 4, color: Color(0xffE4E7EB))))),
+          ),
           // Container(
           //   height: 50,
           //   margin: EdgeInsets.only(top: 20),
@@ -250,20 +267,33 @@ class _PincodeTabState extends State<PincodeTab> {
             flex: 1,
             child: Container(),
           ),
-          Container(
-            width: MediaQuery.of(context).size.width - 54,
-            height: 65,
-            child: Center(
-              child: Text("Check Availability",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  )),
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Color(0xff0A6CFF),
+          GestureDetector(
+            onTap: () {
+              var isValid = _formKey.currentState.validate();
+              if (isValid) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AvailableDaysSlots(
+                              pincode: pincode,
+                            )));
+              }
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width - 54,
+              height: 65,
+              child: Center(
+                child: Text("Check Availability",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    )),
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Color(0xff0A6CFF),
+              ),
             ),
           ),
           Expanded(
@@ -337,6 +367,5 @@ class _DistrictsTabState extends State<DistrictsTab> {
         ],
       ),
     );
-    ;
   }
 }
