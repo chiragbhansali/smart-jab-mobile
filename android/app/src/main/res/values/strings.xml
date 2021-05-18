@@ -1,1 +1,4 @@
-<resources></resources>
+<resources>
+    <string name="open_cowin">Open CoWin</string>
+    <string name="dismiss">Dismiss</string>
+</resources>
