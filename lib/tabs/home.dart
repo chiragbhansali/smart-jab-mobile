@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
+import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
 
 class HomeTab extends StatefulWidget {
@@ -15,6 +17,7 @@ class _HomeTabState extends State<HomeTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 60,
         backgroundColor: Color(0xffF5F7FA),
         elevation: 0,
         centerTitle: true,
@@ -22,7 +25,7 @@ class _HomeTabState extends State<HomeTab> {
             style: TextStyle(
                 color: Color(0xff323F4B),
                 fontWeight: FontWeight.w500,
-                fontSize: 20)),
+                fontSize: 18)),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -123,6 +126,7 @@ class _PincodeTabState extends State<PincodeTab> {
     var pincode;
 
     return Container(
+      color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 27),
       margin: EdgeInsets.only(top: 40),
       child: Column(
@@ -154,115 +158,6 @@ class _PincodeTabState extends State<PincodeTab> {
                         borderSide:
                             BorderSide(width: 4, color: Color(0xffE4E7EB))))),
           ),
-          // Container(
-          //   height: 50,
-          //   margin: EdgeInsets.only(top: 20),
-          //   width: MediaQuery.of(context).size.width - 54,
-          //   child: ListView(
-          //     scrollDirection: Axis.horizontal,
-          //     children: [
-          //       Padding(
-          //         padding: EdgeInsets.all(4),
-          //         child: FilterChip(
-          //           label: Text("18+",
-          //               style: TextStyle(
-          //                 color: !eighteenPlus
-          //                     ? Color(0xff0A6CFF)
-          //                     : Color(0xffffffff),
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 16,
-          //               )),
-          //           onSelected: (i) {
-          //             setState(() {
-          //               eighteenPlus = i;
-          //             });
-          //           },
-          //           labelPadding:
-          //               EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          //           disabledColor: Color(0xffE3EFFF),
-          //           backgroundColor: Color(0xffE3EFFF),
-          //           selectedColor: Color(0xff0A6CFF),
-          //           selected: eighteenPlus,
-          //           checkmarkColor: Colors.white,
-          //         ),
-          //       ),
-          //       Padding(
-          //         padding: const EdgeInsets.all(4.0),
-          //         child: FilterChip(
-          //           label: Text("45+",
-          //               style: TextStyle(
-          //                 color: !fortyfivePlus
-          //                     ? Color(0xff0A6CFF)
-          //                     : Color(0xffffffff),
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 16,
-          //               )),
-          //           onSelected: (i) {
-          //             setState(() {
-          //               fortyfivePlus = i;
-          //             });
-          //           },
-          //           labelPadding:
-          //               EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          //           disabledColor: Color(0xffE3EFFF),
-          //           backgroundColor: Color(0xffE3EFFF),
-          //           selectedColor: Color(0xff0A6CFF),
-          //           selected: fortyfivePlus,
-          //           checkmarkColor: Colors.white,
-          //         ),
-          //       ),
-          //       Padding(
-          //         padding: const EdgeInsets.all(4.0),
-          //         child: FilterChip(
-          //           label: Text("Covaxine",
-          //               style: TextStyle(
-          //                 color:
-          //                     !covaxine ? Color(0xff0A6CFF) : Color(0xffffffff),
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 16,
-          //               )),
-          //           onSelected: (i) {
-          //             setState(() {
-          //               covaxine = i;
-          //             });
-          //           },
-          //           labelPadding:
-          //               EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          //           disabledColor: Color(0xffE3EFFF),
-          //           backgroundColor: Color(0xffE3EFFF),
-          //           selectedColor: Color(0xff0A6CFF),
-          //           selected: covaxine,
-          //           checkmarkColor: Colors.white,
-          //         ),
-          //       ),
-          //       Padding(
-          //         padding: const EdgeInsets.all(4.0),
-          //         child: FilterChip(
-          //           label: Text("Covishield",
-          //               style: TextStyle(
-          //                 color: !covishield
-          //                     ? Color(0xff0A6CFF)
-          //                     : Color(0xffffffff),
-          //                 fontWeight: FontWeight.w500,
-          //                 fontSize: 16,
-          //               )),
-          //           onSelected: (i) {
-          //             setState(() {
-          //               covishield = i;
-          //             });
-          //           },
-          //           labelPadding:
-          //               EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          //           disabledColor: Color(0xffE3EFFF),
-          //           backgroundColor: Color(0xffE3EFFF),
-          //           selectedColor: Color(0xff0A6CFF),
-          //           selected: covishield,
-          //           checkmarkColor: Colors.white,
-          //         ),
-          //       )
-          //     ],
-          //   ),
-          // ),
           Expanded(
             flex: 1,
             child: Container(),
@@ -312,6 +207,34 @@ class DistrictsTab extends StatefulWidget {
 }
 
 class _DistrictsTabState extends State<DistrictsTab> {
+  String _chosenStateId = "1";
+  int _chosenDistrictId = 1;
+
+  Map<dynamic, dynamic> districts;
+
+  void fillDistrictsMap(stateId) {
+    print(statesAndDistricts[stateId]['districts']);
+    var districtsList = statesAndDistricts[stateId]['districts'];
+    Map<dynamic, dynamic> districtsMap = {};
+
+    for (var district in districtsList) {
+      districtsMap[district['district_id']] = district['district_name'];
+    }
+
+    var firstDistrictId = districtsMap.keys.toList()[0];
+    setState(() {
+      _chosenDistrictId = firstDistrictId;
+      districts = districtsMap;
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fillDistrictsMap(_chosenStateId);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -319,45 +242,113 @@ class _DistrictsTabState extends State<DistrictsTab> {
       margin: EdgeInsets.only(top: 40),
       child: Column(
         children: [
-          TextField(
-              decoration: InputDecoration(
-                  labelText: "Select your State",
-                  fillColor: Color(0xffF5F7FA),
-                  filled: true,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      borderSide:
-                          BorderSide(width: 4, color: Color(0xffE4E7EB))))),
+          Container(
+            height: 60,
+            child: FormField<String>(
+              builder: (FormFieldState<String> state) {
+                return InputDecorator(
+                  decoration: InputDecoration(
+                      fillColor: Color(0xffF5F7FA),
+                      filled: true,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide:
+                              BorderSide(width: 4, color: Color(0xffE4E7EB)))),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                        value: _chosenStateId,
+                        style:
+                            TextStyle(color: Color(0xff323F4B), fontSize: 16),
+                        onChanged: (v) {
+                          setState(() {
+                            _chosenStateId = v;
+                          });
+                          fillDistrictsMap(v);
+                        },
+                        items: statesAndDistricts.keys
+                            .toList()
+                            .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(
+                                    statesAndDistricts[e]['name'],
+                                    style: TextStyle(
+                                        color: Color(0xff323F4B), fontSize: 16),
+                                  ),
+                                ))
+                            .toList()),
+                  ),
+                );
+              },
+            ),
+          ),
           SizedBox(
             height: 12,
           ),
-          TextField(
-              decoration: InputDecoration(
-                  labelText: "Select Your District",
-                  fillColor: Color(0xffF5F7FA),
-                  filled: true,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      borderSide:
-                          BorderSide(width: 4, color: Color(0xffE4E7EB))))),
+          Container(
+            height: 60,
+            child: FormField<String>(
+              builder: (FormFieldState<String> state) {
+                return InputDecorator(
+                  decoration: InputDecoration(
+                      fillColor: Color(0xffF5F7FA),
+                      filled: true,
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide:
+                              BorderSide(width: 4, color: Color(0xffE4E7EB)))),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                        value: _chosenDistrictId,
+                        style:
+                            TextStyle(color: Color(0xff323F4B), fontSize: 16),
+                        onChanged: (v) {
+                          setState(() {
+                            _chosenDistrictId = v;
+                          });
+                        },
+                        items: districts.keys
+                            .toList()
+                            .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(districts[e],
+                                      style: TextStyle(
+                                          color: Color(0xff323F4B),
+                                          fontSize: 16)),
+                                ))
+                            .toList()),
+                  ),
+                );
+              },
+            ),
+          ),
           Expanded(
             flex: 1,
             child: Container(),
           ),
-          Container(
-            width: MediaQuery.of(context).size.width - 54,
-            height: 65,
-            child: Center(
-              child: Text("Check Availability",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  )),
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Color(0xff0A6CFF),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AvailableDaysSlots(
+                          stateId: _chosenStateId,
+                          districtId: _chosenDistrictId)));
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width - 54,
+              height: 65,
+              child: Center(
+                child: Text("Check Availability",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    )),
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Color(0xff0A6CFF),
+              ),
             ),
           ),
           Expanded(

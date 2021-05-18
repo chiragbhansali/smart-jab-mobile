@@ -4,30 +4,32 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:icon="@mipmap/ic_launcher"
-        android:label="vaccine_slot_notifier"
+        android:label="Smart Jab"
         android:usesCleartextTraffic="true">
-        <service
-            android:name=".OverlayService"
+        <receiver
+            android:name=".AlarmActionsReceiver"
             android:enabled="true"
-            android:exported="true"></service>
-        <service
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
+            android:exported="true" />
 
-        <receiver
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmBroadcastReceiver"
-            android:exported="false" />
-        <receiver
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.RebootBroadcastReceiver"
-            android:enabled="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
+
+        <activity
+            android:name=".AlarmActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/AlarmTheme"
+            android:showWhenLocked="true"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            />
+
+        <receiver android:name=".AlarmReceiver" />
 
         <activity
             android:name=".MainActivity"
