@@ -31,7 +31,10 @@ class AlarmActionsReceiver : BroadcastReceiver() {
                 v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
                 v?.cancel()
 
+
+                mp?.stop()
                 mp?.reset()
+                mp?.release()
                 mp = null
             } else if (action == "START") {
                 v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -43,6 +46,29 @@ class AlarmActionsReceiver : BroadcastReceiver() {
 
                 mp = MediaPlayer.create(context, defaultRingtoneUri)
                 mp?.start()
+            }else if(action == "OPENCOWIN"){
+
+//                val i = Intent(context, CowinActivity::class.java);
+//                context.startActivity(i)
+
+                Log.d("AlarmWorker", "HERE")
+
+                context.sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+                val notifManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notifManager.cancel(19002007)
+
+                v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                v?.cancel()
+
+
+                mp?.stop()
+                mp?.reset()
+                mp?.release()
+                mp = null
+
+                val cowinIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://selfregistration.cowin.gov.in/"))
+                cowinIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(cowinIntent)
             }
         }
     }

@@ -8,9 +8,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import java.util.concurrent.TimeUnit
 
 
@@ -20,18 +26,22 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var wm: WorkManager = WorkManager.getInstance(applicationContext)
-        wm.cancelAllWork()
+        val fromAlarm = intent.getStringExtra("FROM_ALARM")
 
-        sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
-        var constraints: Constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+        if (fromAlarm != "TRUE") {
+            var wm: WorkManager = WorkManager.getInstance(applicationContext)
+            wm.cancelAllWork()
 
-        var periodicAlarmCheckWorker: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
-                .addTag(ALARM_CHECK_WORKER).setConstraints(constraints)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
-                .build()
+            sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+            var constraints: Constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
-        wm.enqueueUniquePeriodicWork("ALARM_CHECKER", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker)
+            var periodicAlarmCheckWorker: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+                    .addTag(ALARM_CHECK_WORKER).setConstraints(constraints)
+                    .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+                    .build()
+
+            wm.enqueueUniquePeriodicWork("ALARM_CHECKER", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker)
+        }
     }
 
 

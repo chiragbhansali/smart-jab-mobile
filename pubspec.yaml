@@ -29,7 +29,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^0.13.3
   intl: ^0.17.0
-  
+  sqflite: ^2.0.0+3
+  path: ^1.8.0
+  url_launcher: ^6.0.4
 
 dev_dependencies:
   flutter_test:
@@ -72,12 +74,10 @@ flutter:
     - family: Inter
       fonts:
         - asset: fonts/Inter-Regular-slnt=0.ttf
-        - asset: fonts/Inter-Bold-slnt=0.ttf
-          weight: 700
-        - asset: fonts/Inter-ExtraBold-slnt=0.ttf
-          weight: 900
         - asset: fonts/Inter-Medium.ttf
           weight: 500
+        - asset: fonts/Inter-SemiBold.ttf
+          weight: 600
   # fonts:
   #   - family: Schyler
   #     fonts:
@@ -92,5 +92,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-
-

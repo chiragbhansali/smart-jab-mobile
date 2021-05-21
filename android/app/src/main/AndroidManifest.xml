@@ -14,22 +14,27 @@
         android:icon="@mipmap/ic_launcher"
         android:label="Smart Jab"
         android:usesCleartextTraffic="true">
+
         <receiver
             android:name=".AlarmActionsReceiver"
             android:enabled="true"
             android:exported="true" />
 
-
         <activity
             android:name=".AlarmActivity"
             android:launchMode="singleTask"
-            android:theme="@style/AlarmTheme"
-            android:showWhenLocked="true"
+            android:screenOrientation="portrait"
             android:showOnLockScreen="true"
-            android:turnScreenOn="true"
-            />
+            android:showWhenLocked="true"
+            android:theme="@style/AlarmTheme"
+            android:turnScreenOn="true" />
 
         <receiver android:name=".AlarmReceiver" />
+        <receiver android:name=".BootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".MainActivity"

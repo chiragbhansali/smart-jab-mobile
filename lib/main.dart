@@ -1,13 +1,13 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:vaccine_slot_notifier/DatabaseProvider.dart';
+import 'package:vaccine_slot_notifier/DatabaseProvider.dart';
 import 'package:vaccine_slot_notifier/jabalarm.dart';
-
-
-
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  DatabaseProvider.db.getAlarms();
   runApp(JabAlarmApp());
 }
 
@@ -18,7 +18,7 @@ class JabAlarmApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'JabAlarm',
+      title: 'Smart Jab',
       home: JabAlarm(),
       theme: ThemeData(fontFamily: "Inter", primaryColor: Color(0xff0A6CFF)),
     );

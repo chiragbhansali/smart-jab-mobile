@@ -48,27 +48,31 @@ class AlarmReceiver : BroadcastReceiver() {
         dismissIntent.putExtra("ACTION", "DISMISS")
         val dismissPendingIntent = PendingIntent.getBroadcast(context, 1201, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val contentIntent = Intent(context, AlarmActionsReceiver::class.java)
-        dismissIntent.putExtra("ACTION", "DISMISS_AND_OPEN")
-        val contentPendingIntent = PendingIntent.getBroadcast(context, 1202, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val openIntent = Intent(context, AlarmActionsReceiver::class.java)
+        openIntent.putExtra("ACTION", "OPENCOWIN")
+        val openPendingIntent = PendingIntent.getBroadcast(context, 1202, openIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val fullScreenIntent: Intent = Intent(context, AlarmActivity::class.java)
         fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         val fullScreenPendingIntent = PendingIntent.getActivity(context, 0,
                 fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
+        val sharedPrefs = context.getSharedPreferences(context.getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
+        val slotsIn = sharedPrefs.getInt("slotsIn", 1)
+        val place = sharedPrefs.getString("place", "")
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setDefaults(0)
                 .setSmallIcon(R.drawable.logo)
-                .setContentTitle("My notification")
-                .setContentText("Much longer text that cannot fit one line...")
+                .setContentTitle("Vaccines available in $slotsIn centers")
+                .setContentText("Slots are available in $place")
                 .setStyle(NotificationCompat.BigTextStyle()
-                        .bigText("Much longer text that cannot fit one line..."))
+                        .bigText("Slots are available in $place"))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setFullScreenIntent(fullScreenPendingIntent, true)
                 .addAction(R.drawable.dismiss, "Dismiss", dismissPendingIntent)
-                .addAction(R.drawable.open, "Open CoWin", dismissPendingIntent)
+                .addAction(R.drawable.open, "Open CoWin", openPendingIntent)
                 .setVibrate(longArrayOf(1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000))
                 .setOngoing(true)
 

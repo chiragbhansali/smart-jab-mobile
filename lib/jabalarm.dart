@@ -17,6 +17,7 @@ class _JabAlarmState extends State<JabAlarm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        resizeToAvoidBottomInset: true,
         body: PageView(
           controller: _pageController,
           onPageChanged: (pageNum) {
@@ -24,7 +25,10 @@ class _JabAlarmState extends State<JabAlarm> {
               _currentIndex = pageNum;
             });
           },
-          children: [HomeTab(), SettingsTab(), AlarmsTab()],
+          children: [
+            HomeTab(),
+            AlarmsTab(),
+          ],
         ),
         bottomNavigationBar: Container(
           height: 64,
@@ -38,6 +42,8 @@ class _JabAlarmState extends State<JabAlarm> {
             },
             backgroundColor: Color(0xffF5F7FA),
             elevation: 0,
+            selectedFontSize: 10,
+            unselectedFontSize: 10,
             currentIndex: _currentIndex,
             items: [
               BottomNavigationBarItem(
@@ -45,19 +51,13 @@ class _JabAlarmState extends State<JabAlarm> {
                     Icons.home,
                     size: 28,
                   ),
-                  title: Text("Home", style: TextStyle(fontSize: 17))),
+                  title: Text("Home", style: TextStyle(fontSize: 15))),
               BottomNavigationBarItem(
                   icon: Icon(
                     Icons.alarm,
                     size: 28,
                   ),
-                  title: Text("Alarms", style: TextStyle(fontSize: 17))),
-              BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.settings,
-                    size: 28,
-                  ),
-                  title: Text("Settings", style: TextStyle(fontSize: 17)))
+                  title: Text("Alarms", style: TextStyle(fontSize: 15))),
             ],
           ),
         ));

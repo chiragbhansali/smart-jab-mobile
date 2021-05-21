@@ -39,7 +39,7 @@ class _HomeTabState extends State<HomeTab> {
                 child: Text(
                   "Check available vaccination slots • Get notified instantly through an alarm",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                 ),
               ),
               Container(
@@ -150,6 +150,7 @@ class _PincodeTabState extends State<PincodeTab> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     errorStyle: TextStyle(fontSize: 16),
+                    hintStyle: TextStyle(fontSize: 16),
                     labelText: "Enter your PIN Code",
                     fillColor: Color(0xffF5F7FA),
                     filled: true,
@@ -180,7 +181,7 @@ class _PincodeTabState extends State<PincodeTab> {
               child: Center(
                 child: Text("Check Availability",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     )),
@@ -191,10 +192,9 @@ class _PincodeTabState extends State<PincodeTab> {
               ),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Container(),
-          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height / 14,
+          )
         ],
       ),
     );
@@ -209,6 +209,7 @@ class DistrictsTab extends StatefulWidget {
 class _DistrictsTabState extends State<DistrictsTab> {
   String _chosenStateId = "1";
   int _chosenDistrictId = 1;
+  String districtName;
 
   Map<dynamic, dynamic> districts;
 
@@ -224,6 +225,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
     var firstDistrictId = districtsMap.keys.toList()[0];
     setState(() {
       _chosenDistrictId = firstDistrictId;
+      districtName = districtsMap[firstDistrictId];
       districts = districtsMap;
     });
   }
@@ -241,6 +243,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
       padding: EdgeInsets.symmetric(horizontal: 27),
       margin: EdgeInsets.only(top: 40),
       child: Column(
+        mainAxisSize: MainAxisSize.max,
         children: [
           Container(
             height: 60,
@@ -304,6 +307,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
                         onChanged: (v) {
                           setState(() {
                             _chosenDistrictId = v;
+                            districtName = districts[v];
                           });
                         },
                         items: districts.keys
@@ -322,7 +326,6 @@ class _DistrictsTabState extends State<DistrictsTab> {
             ),
           ),
           Expanded(
-            flex: 1,
             child: Container(),
           ),
           GestureDetector(
@@ -331,8 +334,10 @@ class _DistrictsTabState extends State<DistrictsTab> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => AvailableDaysSlots(
-                          stateId: _chosenStateId,
-                          districtId: _chosenDistrictId)));
+                            stateId: _chosenStateId,
+                            districtId: _chosenDistrictId,
+                            districtName: districtName,
+                          )));
             },
             child: Container(
               width: MediaQuery.of(context).size.width - 54,
@@ -340,7 +345,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
               child: Center(
                 child: Text("Check Availability",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     )),
@@ -351,10 +356,9 @@ class _DistrictsTabState extends State<DistrictsTab> {
               ),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Container(),
-          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height / 14,
+          )
         ],
       ),
     );

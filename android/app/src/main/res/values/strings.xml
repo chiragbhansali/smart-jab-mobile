@@ -1,4 +1,6 @@
 <resources>
     <string name="open_cowin">Open CoWin</string>
     <string name="dismiss">Dismiss</string>
+    <string name="slotsAvailable">%1s Slots Available</string>
+    <string name="shared_prefs_key">com.example.vaccine_slot_notifier.ALARMS_DATA_SHARED_PREFS_FILE</string>
 </resources>

@@ -4,13 +4,17 @@ import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
 import 'package:intl/intl.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
+import 'package:vaccine_slot_notifier/models/alarm.dart';
 import "package:vaccine_slot_notifier/views/available/centers.dart";
+import 'package:vaccine_slot_notifier/widgets/addAlarmBottomSheet.dart';
 
 class AvailableDaysSlots extends StatefulWidget {
   final String pincode;
   final int districtId;
+  final String districtName;
   final String stateId;
-  AvailableDaysSlots({this.pincode, this.districtId, this.stateId});
+  AvailableDaysSlots(
+      {this.pincode, this.districtId, this.stateId, this.districtName});
   @override
   _AvailableDaysSlotsState createState() => _AvailableDaysSlotsState();
 }
@@ -22,6 +26,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
   bool fortyfivePlus = false;
   bool covishield = false;
   bool covaxin = false;
+  bool dose1 = false;
+  bool dose2 = false;
 
   bool loading = true;
   bool noSlots = false;
@@ -31,25 +37,31 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
 
   String _chosenStateId;
   int _chosenDistrictId;
+  String districtName;
 
   Map<dynamic, dynamic> districts;
 
   List slotsArray = [];
 
-  void fillDistrictsMap(stateId) {
+  void fillDistrictsMap(stateId, bool fromUseEffect) {
     var districtsList = statesAndDistricts[stateId]['districts'];
     Map<dynamic, dynamic> districtsMap = {};
 
     for (var district in districtsList) {
       districtsMap[district['district_id']] = district['district_name'];
     }
-
-    var firstDistrictId = districtsMap.keys.toList()[0];
-    getSlotsThroughDistrict(firstDistrictId);
-    setState(() {
-      _chosenDistrictId = firstDistrictId;
-      districts = districtsMap;
-    });
+    if (fromUseEffect) {
+      setState(() {
+        districts = districtsMap;
+      });
+    } else {
+      var firstDistrictId = districtsMap.keys.toList()[0];
+      getSlotsThroughDistrict(firstDistrictId);
+      setState(() {
+        _chosenDistrictId = firstDistrictId;
+        districts = districtsMap;
+      });
+    }
   }
 
   void getSlotsThroughDistrict(districtId) async {
@@ -65,6 +77,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       var data = await http.get(Uri.parse(
           "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=$districtId&date=$formattedDate"));
       var body = jsonDecode(data.body);
+      apiData = body;
+      //print(apiData);
 
       if (body['centers'] == null) {
         setState(() {
@@ -96,6 +110,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       });
 
       bool isNoSlots = true;
+      print(slots);
 
       slots.values.toList().forEach((slots) {
         if (slots > 0) {
@@ -106,6 +121,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       if (isNoSlots) {
         setState(() {
           noSlots = true;
+          loading = false;
         });
         return;
       }
@@ -116,7 +132,6 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       });
       datesArray.sort((a, b) => a['date'].compareTo(b['date']));
 
-      apiData = body;
       setState(() {
         noSlots = false;
         slotsPerDay = slots;
@@ -139,6 +154,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       var data = await http.get(Uri.parse(
           "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=$pincode&date=$formattedDate"));
       var body = jsonDecode(data.body);
+      apiData = body;
       if (body['centers'].length < 1) {
         setState(() {
           noSlots = true;
@@ -182,7 +198,6 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       });
       datesArray.sort((a, b) => a['date'].compareTo(b['date']));
 
-      apiData = body;
       setState(() {
         noSlots = false;
         slotsPerDay = slots;
@@ -194,6 +209,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
 
   void filterSlots() {
     var body = apiData;
+    print(fortyfivePlus.toString());
 
     if (body['centers'].length < 1) {
       setState(() {
@@ -207,58 +223,58 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
     body['centers'].forEach((center) {
       var sessions = center['sessions'];
       for (var session in sessions) {
+        if (eighteenPlus && !fortyfivePlus) {
+          if (session['min_age_limit'] == 45) {
+            continue;
+          }
+        }
+
+        if (fortyfivePlus && !eighteenPlus) {
+          if (session['min_age_limit'] == 18) {
+            continue;
+          }
+        }
+
+        if (covaxin && !covishield) {
+          if (session['vaccine'] == 'COVISHIELD') {
+            continue;
+          }
+        }
+
+        if (covishield && !covaxin) {
+          if (session['vaccine'] == 'COVAXIN') {
+            continue;
+          }
+        }
+
+        bool skipDoseFilter = session['available_capacity_dose1'] == 0 &&
+            session['available_capacity_dose2'] == 0 &&
+            session['available_capacity'] > 0;
+
+        if (dose1 && !dose2 && !skipDoseFilter) {
+          if (slots[session['date']] != null) {
+            slots[session['date']] =
+                slots[session['date']] + session['available_capacity_dose1'];
+          } else {
+            slots[session['date']] = session['available_capacity_dose1'];
+          }
+          continue;
+        }
+
+        if (dose2 && !dose1 && !skipDoseFilter) {
+          if (slots[session['date']] != null) {
+            slots[session['date']] =
+                slots[session['date']] + session['available_capacity_dose2'];
+          } else {
+            slots[session['date']] = session['available_capacity_dose2'];
+          }
+          continue;
+        }
+
         if (slots[session['date']] != null) {
-          if (eighteenPlus && !fortyfivePlus) {
-            if (session['min_age_limit'] == 45) {
-              continue;
-            }
-          }
-
-          if (fortyfivePlus && !eighteenPlus) {
-            if (session['min_age_limit'] == 18) {
-              continue;
-            }
-          }
-
-          if (covaxin && !covishield) {
-            if (session['vaccine'] == 'COVISHIELD') {
-              continue;
-            }
-          }
-
-          if (covishield && !covaxin) {
-            if (session['vaccine'] == 'COVAXIN') {
-              continue;
-            }
-          }
-
           slots[session['date']] =
               slots[session['date']] + session['available_capacity'];
         } else {
-          if (eighteenPlus && !fortyfivePlus) {
-            if (session['min_age_limit'] == "45") {
-              continue;
-            }
-          }
-
-          if (fortyfivePlus && !eighteenPlus) {
-            if (session['min_age_limit'] == 18) {
-              continue;
-            }
-          }
-
-          if (covaxin && !covishield) {
-            if (session['vaccine'] == 'COVISHIELD') {
-              continue;
-            }
-          }
-
-          if (covishield && !covaxin) {
-            if (session['vaccine'] == 'COVAXIN') {
-              continue;
-            }
-          }
-
           slots[session['date']] = session['available_capacity'];
         }
       }
@@ -302,9 +318,12 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       getSlotsThroughPincode(widget.pincode);
     } else {
       getSlotsThroughDistrict(widget.districtId);
-      fillDistrictsMap(widget.stateId);
+      print(widget.districtId);
+      fillDistrictsMap(widget.stateId, true);
       _chosenStateId = widget.stateId;
       _chosenDistrictId = widget.districtId;
+      districtName = widget.districtName;
+      print(widget.districtId);
     }
   }
 
@@ -386,7 +405,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                           setState(() {
                                             _chosenStateId = v;
                                           });
-                                          fillDistrictsMap(v);
+                                          fillDistrictsMap(v, false);
                                         },
                                         items: statesAndDistricts.keys
                                             .toList()
@@ -433,6 +452,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                         onChanged: (v) {
                                           setState(() {
                                             _chosenDistrictId = v;
+                                            districtName = districts[v];
                                           });
                                           getSlotsThroughDistrict(v);
                                         },
@@ -462,6 +482,58 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
+                    Padding(
+                      padding: EdgeInsets.all(4),
+                      child: FilterChip(
+                        label: Text("Dose 1",
+                            style: TextStyle(
+                              color: !dose1
+                                  ? Color(0xff0A6CFF)
+                                  : Color(0xffffffff),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            )),
+                        onSelected: (i) {
+                          setState(() {
+                            dose1 = i;
+                          });
+                          filterSlots();
+                        },
+                        labelPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        disabledColor: Color(0xffE3EFFF),
+                        backgroundColor: Color(0xffE3EFFF),
+                        selectedColor: Color(0xff0A6CFF),
+                        selected: dose1,
+                        checkmarkColor: Colors.white,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(4),
+                      child: FilterChip(
+                        label: Text("Dose 2",
+                            style: TextStyle(
+                              color: !dose2
+                                  ? Color(0xff0A6CFF)
+                                  : Color(0xffffffff),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            )),
+                        onSelected: (i) {
+                          setState(() {
+                            dose2 = i;
+                          });
+                          filterSlots();
+                        },
+                        labelPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        disabledColor: Color(0xffE3EFFF),
+                        backgroundColor: Color(0xffE3EFFF),
+                        selectedColor: Color(0xff0A6CFF),
+                        selected: dose2,
+                        checkmarkColor: Colors.white,
+                      ),
+                    ),
                     Padding(
                       padding: EdgeInsets.all(4),
                       child: FilterChip(
@@ -575,7 +647,18 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                           child: CircularProgressIndicator(),
                         )
                       : noSlots
-                          ? NoSlots()
+                          ? NoSlots(Alarm(
+                              pincode: widget.pincode,
+                              districtId: _chosenDistrictId.toString(),
+                              districtName: districtName,
+                              eighteenPlus: eighteenPlus.toString(),
+                              fortyfivePlus: fortyfivePlus.toString(),
+                              covaxin: covaxin.toString(),
+                              covishield: covishield.toString(),
+                              dose1: dose1.toString(),
+                              dose2: dose2.toString(),
+                              minAvailable: 1,
+                              isOn: "true"))
                           : Container(
                               margin: EdgeInsets.only(top: 15),
                               child: ListView.builder(
@@ -585,6 +668,14 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                         (slotsArray[index]['slots']).round(),
                                         slotsMap: slotsPerDay,
                                         apiData: apiData,
+                                        filters: {
+                                          "eighteenPlus": eighteenPlus,
+                                          "fortyfivePlus": fortyfivePlus,
+                                          "covaxin": covaxin,
+                                          "covishield": covishield,
+                                          "dose1": dose1,
+                                          "dose2": dose2
+                                        },
                                         place: widget.pincode != null
                                             ? widget.pincode
                                             : districts[_chosenDistrictId]);
@@ -598,6 +689,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
 }
 
 class NoSlots extends StatefulWidget {
+  final Alarm alarm;
+  NoSlots(this.alarm);
   @override
   _NoSlotsState createState() => _NoSlotsState();
 }
@@ -615,26 +708,45 @@ class _NoSlotsState extends State<NoSlots> {
             margin: EdgeInsets.only(top: 20),
             child: Text(
               "No Slots Available in this Area",
+              textAlign: TextAlign.center,
               style: TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 20,
                   color: Color(0xff323F4B)),
             )),
         Expanded(child: Container()),
-        Container(
-          width: MediaQuery.of(context).size.width - 54,
-          height: 65,
-          child: Center(
-            child: Text("Set An Alarm",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                )),
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: Color(0xff0A6CFF),
+        GestureDetector(
+          onTap: () async {
+            var result = await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) {
+                  return Wrap(
+                    children: [
+                      AddAlarmBottomSheet(widget.alarm),
+                    ],
+                  );
+                });
+
+            if (result == true) {
+              Navigator.pop(context);
+            }
+          },
+          child: Container(
+            width: MediaQuery.of(context).size.width - 54,
+            height: 65,
+            child: Center(
+              child: Text("Set An Alarm",
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  )),
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: Color(0xff0A6CFF),
+            ),
           ),
         ),
         Expanded(child: Container())
@@ -648,9 +760,10 @@ class SlotsPerDayCard extends StatefulWidget {
   final int slots;
   final Map<dynamic, dynamic> slotsMap;
   final Map<dynamic, dynamic> apiData;
+  final Map<String, bool> filters;
   final String place;
   SlotsPerDayCard(this.date, this.slots,
-      {this.slotsMap, this.apiData, this.place});
+      {this.slotsMap, this.apiData, this.place, this.filters});
 
   @override
   _SlotsPerDayCardState createState() => _SlotsPerDayCardState();
@@ -666,10 +779,12 @@ class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
               context,
               MaterialPageRoute(
                   builder: (context) => CentersAvailableSlots(
-                      selectedDate: widget.date,
-                      dates: widget.slotsMap,
-                      apiData: widget.apiData,
-                      place: widget.place)));
+                        selectedDate: widget.date,
+                        dates: widget.slotsMap,
+                        apiData: widget.apiData,
+                        place: widget.place,
+                        filters: widget.filters,
+                      )));
         }
       },
       child: Container(
