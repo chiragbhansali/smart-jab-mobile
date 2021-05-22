@@ -1,9 +1,6 @@
 package com.example.vaccine_slot_notifier
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -29,6 +26,7 @@ class MainActivity : FlutterActivity() {
         val fromAlarm = intent.getStringExtra("FROM_ALARM")
 
         if (fromAlarm != "TRUE") {
+
             var wm: WorkManager = WorkManager.getInstance(applicationContext)
             wm.cancelAllWork()
 

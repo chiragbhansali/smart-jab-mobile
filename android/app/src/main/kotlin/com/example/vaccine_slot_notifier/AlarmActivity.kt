@@ -2,6 +2,7 @@ package com.example.vaccine_slot_notifier
 
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
@@ -78,23 +79,14 @@ class AlarmActivity : AppCompatActivity() {
         swipeButton.setOnTouchListener(object : OnSwipeTouchListener(this@AlarmActivity) {
             override fun onSwipeLeft() {
                 super.onSwipeLeft()
-                mp?.reset()
-                mp?.release()
-                val i = Intent(this@AlarmActivity, AlarmActionsReceiver::class.java)
-                i.putExtra("ACTION", "DISMISS")
-                sendBroadcast(i)
+                dismiss()
                 v.cancel()
                 finish()
             }
 
             override fun onSwipeRight() {
-                mp?.reset()
-                mp?.release()
                 super.onSwipeRight()
-                val i = Intent(this@AlarmActivity, AlarmActionsReceiver::class.java)
-                i.putExtra("ACTION", "DISMISS")
-                sendBroadcast(i)
-                v.cancel()
+                dismiss()
                 finish()
                 val mainIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://selfregistration.cowin.gov.in/"))
                 startActivity(mainIntent)
@@ -103,5 +95,19 @@ class AlarmActivity : AppCompatActivity() {
 
         })
 
+    }
+
+    private fun dismiss() {
+        val notifManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notifManager.cancel(19002007)
+
+        val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        v.cancel()
+
+
+        mp?.stop()
+        mp?.reset()
+        mp?.release()
+        mp = null
     }
 }
