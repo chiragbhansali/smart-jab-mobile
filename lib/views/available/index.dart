@@ -7,6 +7,7 @@ import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/models/alarm.dart';
 import "package:vaccine_slot_notifier/views/available/centers.dart";
 import 'package:vaccine_slot_notifier/widgets/addAlarmBottomSheet.dart';
+import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
 
 class AvailableDaysSlots extends StatefulWidget {
   final String pincode;
@@ -317,11 +318,12 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
     if (widget.pincode != null) {
       getSlotsThroughPincode(widget.pincode);
     } else {
+      setState(() {
+        _chosenStateId = widget.stateId;
+        _chosenDistrictId = widget.districtId;
+      });
       getSlotsThroughDistrict(widget.districtId);
-      print(widget.districtId);
       fillDistrictsMap(widget.stateId, true);
-      _chosenStateId = widget.stateId;
-      _chosenDistrictId = widget.districtId;
       districtName = widget.districtName;
       print(widget.districtId);
     }
@@ -381,97 +383,82 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                   : Container(
                       child: Column(
                         children: [
-                          Container(
-                            height: 60,
-                            child: FormField<String>(
-                              builder: (FormFieldState<String> state) {
-                                return InputDecorator(
-                                  decoration: InputDecoration(
-                                      fillColor: Color(0xffF5F7FA),
-                                      filled: true,
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          borderSide: BorderSide(
-                                              width: 4,
-                                              color: Color(0xffE4E7EB)))),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton(
-                                        value: _chosenStateId,
-                                        style: TextStyle(
-                                            color: Color(0xff323F4B),
-                                            fontSize: 16),
-                                        onChanged: (v) {
-                                          setState(() {
-                                            _chosenStateId = v;
-                                          });
-                                          fillDistrictsMap(v, false);
-                                        },
-                                        items: statesAndDistricts.keys
-                                            .toList()
-                                            .map((e) => DropdownMenuItem(
-                                                  value: e,
-                                                  child: Text(
-                                                    statesAndDistricts[e]
-                                                        ['name'],
-                                                    style: TextStyle(
-                                                        color:
-                                                            Color(0xff323F4B),
-                                                        fontSize: 16),
-                                                  ),
-                                                ))
-                                            .toList()),
-                                  ),
-                                );
+                          DropdownBelow(
+                              itemWidth: MediaQuery.of(context).size.width - 56,
+                              itemTextstyle: TextStyle(
+                                  fontSize: 16,
+                                  //fontWeight: FontWeight.w500,
+                                  color: Color(0XFF7B8794)),
+                              boxTextstyle: TextStyle(
+                                  fontSize: 16,
+                                  //fontWeight: FontWeight.w500,
+                                  color: Color(0XFF7B8794)),
+                              boxPadding: EdgeInsets.fromLTRB(13, 12, 0, 12),
+                              boxHeight: 60,
+                              boxWidth: MediaQuery.of(context).size.width - 54,
+                              value: _chosenStateId ?? widget.stateId,
+                              hint: Text("Choose a State",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      //fontWeight: FontWeight.w500,
+                                      color: Color(0XFF7B8794))),
+                              onChanged: (v) {
+                                setState(() {
+                                  _chosenStateId = v;
+                                });
+                                fillDistrictsMap(v, false);
                               },
-                            ),
-                          ),
+                              items: statesAndDistricts.keys
+                                  .toList()
+                                  .map((e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(
+                                          statesAndDistricts[e]['name'],
+                                          style: TextStyle(
+                                              color: Color(0xff323F4B),
+                                              fontSize: 16),
+                                        ),
+                                      ))
+                                  .toList()),
                           SizedBox(
                             height: 12,
                           ),
-                          Container(
-                            height: 60,
-                            child: FormField<String>(
-                              builder: (FormFieldState<String> state) {
-                                return InputDecorator(
-                                  decoration: InputDecoration(
-                                      fillColor: Color(0xffF5F7FA),
-                                      filled: true,
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          borderSide: BorderSide(
-                                              width: 4,
-                                              color: Color(0xffE4E7EB)))),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton(
-                                        value: _chosenDistrictId,
-                                        style: TextStyle(
-                                            color: Color(0xff323F4B),
-                                            fontSize: 16),
-                                        onChanged: (v) {
-                                          setState(() {
-                                            _chosenDistrictId = v;
-                                            districtName = districts[v];
-                                          });
-                                          getSlotsThroughDistrict(v);
-                                        },
-                                        items: districts.keys
-                                            .toList()
-                                            .map((e) => DropdownMenuItem(
-                                                  value: e,
-                                                  child: Text(districts[e],
-                                                      style: TextStyle(
-                                                          color:
-                                                              Color(0xff323F4B),
-                                                          fontSize: 16)),
-                                                ))
-                                            .toList()),
-                                  ),
-                                );
+                          DropdownBelow(
+                              itemWidth: MediaQuery.of(context).size.width - 56,
+                              itemTextstyle: TextStyle(
+                                  fontSize: 16,
+                                  //fontWeight: FontWeight.w500,
+                                  color: Color(0XFF7B8794)),
+                              boxTextstyle: TextStyle(
+                                  fontSize: 16,
+                                  //fontWeight: FontWeight.w500,
+                                  color: Color(0XFF7B8794)),
+                              boxPadding: EdgeInsets.fromLTRB(13, 12, 0, 12),
+                              boxHeight: 60,
+                              boxWidth: MediaQuery.of(context).size.width - 54,
+                              value: _chosenDistrictId ?? widget.districtId,
+                              hint: Text("Choose a District",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      //fontWeight: FontWeight.w500,
+                                      color: Color(0XFF7B8794))),
+                              onChanged: (v) {
+                                setState(() {
+                                  _chosenDistrictId = v;
+                                  districtName = districts[v];
+                                });
+                                getSlotsThroughDistrict(v);
                               },
-                            ),
-                          ),
+                              items: districts.keys
+                                  .toList()
+                                  .map((e) => DropdownMenuItem(
+                                        value: e,
+                                        child: Text(districts[e],
+                                            style: TextStyle(
+                                                color: Color(0xff323F4B),
+                                                fontSize: 16)),
+                                      ))
+                                  .toList()),
                         ],
                       ),
                     ),
@@ -701,9 +688,13 @@ class _NoSlotsState extends State<NoSlots> {
     return Container(
       child: Column(children: [
         Expanded(child: Container()),
-        Image.asset(
-          "assets/sadold.png",
-        ),
+        Container(
+            width: MediaQuery.of(context).size.width / 3,
+            height: MediaQuery.of(context).size.width / 3,
+            child: Image.asset(
+              "assets/empty_box_lg.png",
+              fit: BoxFit.contain,
+            )),
         Container(
             margin: EdgeInsets.only(top: 20),
             child: Text(
@@ -734,11 +725,11 @@ class _NoSlotsState extends State<NoSlots> {
           },
           child: Container(
             width: MediaQuery.of(context).size.width - 54,
-            height: 65,
+            height: 60,
             child: Center(
               child: Text("Set An Alarm",
                   style: TextStyle(
-                    fontSize: 17,
+                    fontSize: 16.5,
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                   )),

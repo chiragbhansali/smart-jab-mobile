@@ -4,7 +4,8 @@ import 'package:vaccine_slot_notifier/models/alarm.dart';
 
 class EditAlarmBottomSheet extends StatefulWidget {
   final Alarm alarmData;
-  EditAlarmBottomSheet(this.alarmData);
+  final Function getAlarms;
+  EditAlarmBottomSheet(this.alarmData, this.getAlarms);
   @override
   _EditAlarmBottomSheetState createState() => _EditAlarmBottomSheetState();
 }
@@ -327,11 +328,12 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                           });
                           var res = await DatabaseProvider.db
                               .editAlarm(alarmData.id, finalAlarm.toMap());
+                          await widget.getAlarms();
                           setState(() {
                             isLoading = false;
                           });
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            duration: Duration(seconds: 3),
+                            duration: Duration(seconds: 1, milliseconds: 500),
                             behavior: SnackBarBehavior.floating,
                             backgroundColor: Color(0xff323232),
                             content: Container(
@@ -357,7 +359,7 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                 child: Container(
                   width: MediaQuery.of(context).size.width / 2 - 20,
                   margin: EdgeInsets.only(top: 30),
-                  height: 65,
+                  height: 60,
                   child: Center(
                     child: isLoading
                         ? CircularProgressIndicator(
@@ -366,7 +368,7 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                           )
                         : Text("Save Alarm",
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 16.5,
                               color: Colors.white,
                               fontWeight: FontWeight.w500,
                             )),
@@ -422,14 +424,14 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                 child: Container(
                     width: MediaQuery.of(context).size.width / 2 - 40,
                     margin: EdgeInsets.only(top: 30, left: 20),
-                    height: 65,
+                    height: 60,
                     //color: Colors.black,
                     child: Center(
                         child: Text("Delete",
                             style: TextStyle(
                                 color: Color(0xff3E4C59),
                                 fontWeight: FontWeight.w500,
-                                fontSize: 17)))),
+                                fontSize: 16.5)))),
               )
             ],
           ),

@@ -354,7 +354,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
             child: Container(
               width: MediaQuery.of(context).size.width - 54,
               margin: EdgeInsets.only(top: 30),
-              height: 65,
+              height: 60,
               child: Center(
                 child: isLoading
                     ? CircularProgressIndicator(
@@ -362,7 +362,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                       )
                     : Text("Set An Alarm",
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 16.5,
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
                         )),

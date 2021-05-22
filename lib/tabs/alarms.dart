@@ -14,25 +14,19 @@ class _AlarmsTabState extends State<AlarmsTab> {
   int length;
 
   Future<dynamic> getAlarms() async {
+    print("called");
     setState(() {
       isLoading = true;
     });
 
     var res = await DatabaseProvider.db.getAlarms();
 
+    print(res[0].eighteenPlus);
+
     setState(() {
       alarms = res;
-      length = res.length;
       isLoading = false;
     });
-    var toPrint = [];
-
-    res.forEach((e) {
-      toPrint.add(e.toMap());
-    });
-
-    //print(toPrint);
-    setState(() {});
   }
 
   @override
@@ -58,14 +52,15 @@ class _AlarmsTabState extends State<AlarmsTab> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : length == 0
+          : alarms.length == 0
               ? NoAlarms()
               : Container(
                   margin: EdgeInsets.only(top: 30),
                   child: ListView.builder(
-                      itemCount: length,
+                      itemCount: alarms.length,
                       itemBuilder: (context, index) {
-                        return AlarmCard(alarms[index], getAlarms);
+                        return AlarmCard(new ValueKey(alarms[index].id),
+                            alarms[index], getAlarms);
                       })),
     );
   }
@@ -82,14 +77,18 @@ class _NoAlarmsState extends State<NoAlarms> {
     return Container(
       child: Column(children: [
         Expanded(child: Container()),
-        Image.asset(
-          "assets/sadold.png",
-        ),
+        Container(
+            width: MediaQuery.of(context).size.width / 3,
+            height: MediaQuery.of(context).size.width / 3,
+            child: Image.asset(
+              "assets/no_alarms_lg.png",
+              fit: BoxFit.contain,
+            )),
         SizedBox(height: 20),
         Container(
             margin: EdgeInsets.only(top: 20),
             child: Text(
-              "You havent created any alarms yet",
+              "You haven't created any alarms yet",
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontWeight: FontWeight.w500,
@@ -105,7 +104,7 @@ class _NoAlarmsState extends State<NoAlarms> {
 class AlarmCard extends StatefulWidget {
   final Alarm alarm;
   final Function getAlarms;
-  AlarmCard(this.alarm, this.getAlarms);
+  AlarmCard(Key key, this.alarm, this.getAlarms) : super(key: key);
   @override
   _AlarmCardState createState() => _AlarmCardState();
 }
@@ -134,13 +133,13 @@ class _AlarmCardState extends State<AlarmCard> {
             isScrollControlled: true,
             builder: (context) {
               return Wrap(
-                children: [EditAlarmBottomSheet(alarm)],
+                children: [EditAlarmBottomSheet(alarm, widget.getAlarms)],
               );
             });
 
-        if (result == true) {
-          await widget.getAlarms();
-        }
+        // if (result == true) {
+        //   await widget.getAlarms();
+        // }
       },
       child: Container(
         //height: 170,

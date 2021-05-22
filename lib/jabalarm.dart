@@ -44,6 +44,7 @@ class _JabAlarmState extends State<JabAlarm> {
             elevation: 0,
             selectedFontSize: 10,
             unselectedFontSize: 10,
+            selectedItemColor: Theme.of(context).primaryColor,
             currentIndex: _currentIndex,
             items: [
               BottomNavigationBarItem(
@@ -51,13 +52,17 @@ class _JabAlarmState extends State<JabAlarm> {
                     Icons.home,
                     size: 28,
                   ),
-                  title: Text("Home", style: TextStyle(fontSize: 15))),
+                  title: Text("Home",
+                      style: TextStyle(
+                          fontSize: 14.5, fontWeight: FontWeight.w500))),
               BottomNavigationBarItem(
                   icon: Icon(
                     Icons.alarm,
                     size: 28,
                   ),
-                  title: Text("Alarms", style: TextStyle(fontSize: 15))),
+                  title: Text("Alarms",
+                      style: TextStyle(
+                          fontSize: 14.5, fontWeight: FontWeight.w500))),
             ],
           ),
         ));
