@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
+import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
 import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
@@ -121,11 +122,33 @@ class PincodeTab extends StatefulWidget {
 }
 
 class _PincodeTabState extends State<PincodeTab> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  var pincode;
+  var pincodeController = TextEditingController();
+
+  final storage = LocalStorage();
+
+  void getSavedPincode() async {
+    String storedPincode = await storage.getItem("pincode");
+    print(storedPincode);
+    if (storedPincode != null) {
+      pincodeController.text = storedPincode;
+      pincode = storedPincode;
+      setState(() {
+        // pincode = storedPincode;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getSavedPincode();
+  }
+
   @override
   Widget build(BuildContext context) {
-    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    var pincode;
-
     return Container(
       color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 27),
@@ -135,7 +158,7 @@ class _PincodeTabState extends State<PincodeTab> {
           Form(
             key: _formKey,
             child: TextFormField(
-                initialValue: pincode,
+                controller: pincodeController,
                 onChanged: (value) {
                   pincode = value;
                 },
@@ -165,9 +188,10 @@ class _PincodeTabState extends State<PincodeTab> {
             child: Container(),
           ),
           GestureDetector(
-            onTap: () {
+            onTap: () async {
               var isValid = _formKey.currentState.validate();
               if (isValid) {
+                await storage.setItem("pincode", pincode);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -212,7 +236,20 @@ class _DistrictsTabState extends State<DistrictsTab> {
   int _chosenDistrictId = 1;
   String districtName;
 
+  var storage = LocalStorage();
+
   Map<dynamic, dynamic> districts;
+
+  void getStored() async {
+    String storedStateId = await storage.getItem("stateId");
+    int storedDistrictId = await storage.getItem("districtId");
+    if (storedStateId != null && storedDistrictId != null) {
+      fillDistrictsMap(storedStateId);
+      _chosenStateId = storedStateId;
+      _chosenDistrictId = storedDistrictId;
+      setState(() {});
+    }
+  }
 
   void fillDistrictsMap(stateId) {
     //print(statesAndDistricts[stateId]['districts']);
@@ -235,6 +272,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getStored();
     fillDistrictsMap(_chosenStateId);
   }
 
@@ -325,7 +363,9 @@ class _DistrictsTabState extends State<DistrictsTab> {
             child: Container(),
           ),
           GestureDetector(
-            onTap: () {
+            onTap: () async {
+              await storage.setItem("stateId", _chosenStateId);
+              await storage.setItem("districtId", _chosenDistrictId);
               Navigator.push(
                   context,
                   MaterialPageRoute(

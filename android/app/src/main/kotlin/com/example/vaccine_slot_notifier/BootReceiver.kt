@@ -20,15 +20,27 @@ class BootReceiver : BroadcastReceiver() {
                     var wm: WorkManager = WorkManager.getInstance(context)
                     wm.cancelAllWork()
 
-
                     var constraints: Constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
-                    var periodicAlarmCheckWorker: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
-                            .addTag(ALARM_CHECK_WORKER).setConstraints(constraints)
+                    var periodicAlarmCheckWorker1: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+                            .addTag(ALARM_CHECK_WORKER + "_1").setConstraints(constraints)
                             .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+                            //.setInitialDelay(0, TimeUnit.MINUTES)
+                            .build()
+                    var periodicAlarmCheckWorker2: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+                            .addTag(ALARM_CHECK_WORKER + "_2").setConstraints(constraints)
+                            .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+                            .setInitialDelay(5, TimeUnit.MINUTES)
+                            .build()
+                    var periodicAlarmCheckWorker3: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+                            .addTag(ALARM_CHECK_WORKER + "_3").setConstraints(constraints)
+                            .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+                            .setInitialDelay(10, TimeUnit.MINUTES)
                             .build()
 
-                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker)
+                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_1", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker1)
+                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_2", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker2)
+                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_3", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker3)
                 }
             }
         }

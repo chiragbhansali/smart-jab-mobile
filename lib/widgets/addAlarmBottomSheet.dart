@@ -50,6 +50,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       color: Colors.white,
       padding: EdgeInsets.only(bottom: 20, left: 20, right: 20),
       child: Column(
@@ -82,7 +83,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                         style: TextStyle(
                           color: !dose1 ? Color(0xff0A6CFF) : Color(0xffffffff),
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 15,
                         )),
                     onSelected: (i) {
                       setState(() {
@@ -105,7 +106,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                         style: TextStyle(
                           color: !dose2 ? Color(0xff0A6CFF) : Color(0xffffffff),
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 15,
                         )),
                     onSelected: (i) {
                       setState(() {
@@ -130,7 +131,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                               ? Color(0xff0A6CFF)
                               : Color(0xffffffff),
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 15,
                         )),
                     onSelected: (i) {
                       setState(() {
@@ -155,7 +156,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                               ? Color(0xff0A6CFF)
                               : Color(0xffffffff),
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 15,
                         )),
                     onSelected: (i) {
                       setState(() {
@@ -179,7 +180,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                           color:
                               !covaxin ? Color(0xff0A6CFF) : Color(0xffffffff),
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 15,
                         )),
                     onSelected: (i) {
                       setState(() {
@@ -204,7 +205,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                               ? Color(0xff0A6CFF)
                               : Color(0xffffffff),
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 15,
                         )),
                     onSelected: (i) {
                       setState(() {

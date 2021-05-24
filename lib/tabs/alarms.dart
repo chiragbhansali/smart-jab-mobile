@@ -17,11 +17,10 @@ class _AlarmsTabState extends State<AlarmsTab> {
     print("called");
     setState(() {
       isLoading = true;
+      alarms = [];
     });
 
     var res = await DatabaseProvider.db.getAlarms();
-
-    print(res[0].eighteenPlus);
 
     setState(() {
       alarms = res;

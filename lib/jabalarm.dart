@@ -17,7 +17,6 @@ class _JabAlarmState extends State<JabAlarm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: true,
         body: PageView(
           controller: _pageController,
           onPageChanged: (pageNum) {

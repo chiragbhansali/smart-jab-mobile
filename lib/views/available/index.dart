@@ -3,6 +3,7 @@ import 'dart:convert';
 import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/models/alarm.dart';
 import "package:vaccine_slot_notifier/views/available/centers.dart";
@@ -39,6 +40,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
   String _chosenStateId;
   int _chosenDistrictId;
   String districtName;
+  String pincode;
 
   Map<dynamic, dynamic> districts;
 
@@ -316,6 +318,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
     // TODO: implement initState
     super.initState();
     if (widget.pincode != null) {
+      setState(() {
+        pincode = widget.pincode;
+      });
       getSlotsThroughPincode(widget.pincode);
     } else {
       setState(() {
@@ -346,7 +351,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       ),
       body: Container(
           color: Colors.white,
-          padding: EdgeInsets.only(left: 27, right: 27, top: 40),
+          padding: EdgeInsets.only(left: 27, right: 27, top: 25),
           child: Column(
             children: [
               widget.pincode != null
@@ -358,6 +363,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                             var isValid = _pincodeKey.currentState.validate();
                             if (isValid) {
                               getSlotsThroughPincode(value);
+                              setState(() {
+                                pincode = value;
+                              });
                             }
                           },
                           validator: (value) {
@@ -478,7 +486,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                   ? Color(0xff0A6CFF)
                                   : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 15,
                             )),
                         onSelected: (i) {
                           setState(() {
@@ -504,7 +512,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                   ? Color(0xff0A6CFF)
                                   : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 15,
                             )),
                         onSelected: (i) {
                           setState(() {
@@ -530,7 +538,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                   ? Color(0xff0A6CFF)
                                   : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 15,
                             )),
                         onSelected: (i) {
                           setState(() {
@@ -556,7 +564,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                   ? Color(0xff0A6CFF)
                                   : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 15,
                             )),
                         onSelected: (i) {
                           setState(() {
@@ -582,7 +590,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                   ? Color(0xff0A6CFF)
                                   : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 15,
                             )),
                         onSelected: (i) {
                           setState(() {
@@ -608,7 +616,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                   ? Color(0xff0A6CFF)
                                   : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 15,
                             )),
                         onSelected: (i) {
                           setState(() {
@@ -635,7 +643,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                         )
                       : noSlots
                           ? NoSlots(Alarm(
-                              pincode: widget.pincode,
+                              pincode: pincode,
                               districtId: _chosenDistrictId.toString(),
                               districtName: districtName,
                               eighteenPlus: eighteenPlus.toString(),
@@ -663,8 +671,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                           "dose1": dose1,
                                           "dose2": dose2
                                         },
-                                        place: widget.pincode != null
-                                            ? widget.pincode
+                                        place: pincode != null
+                                            ? pincode
                                             : districts[_chosenDistrictId]);
                                   },
                                   itemCount: slotsArray.length),
@@ -768,14 +776,17 @@ class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
         if (widget.slots > 0) {
           Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => CentersAvailableSlots(
-                        selectedDate: widget.date,
-                        dates: widget.slotsMap,
-                        apiData: widget.apiData,
-                        place: widget.place,
-                        filters: widget.filters,
-                      )));
+              PageTransition(
+                  child: CentersAvailableSlots(
+                    selectedDate: widget.date,
+                    dates: widget.slotsMap,
+                    apiData: widget.apiData,
+                    place: widget.place,
+                    filters: widget.filters,
+                  ),
+                  type: PageTransitionType.leftToRight,
+                  duration: Duration(milliseconds: 250),
+                  reverseDuration: Duration(milliseconds: 250)));
         }
       },
       child: Container(

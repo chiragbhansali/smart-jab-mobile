@@ -111,6 +111,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
 
       tempCentersList.add(center);
     });
+    tempCentersList.sort((a, b) => b['slots'].compareTo(a['slots']));
     setState(() {
       centersList = tempCentersList;
     });
@@ -225,7 +226,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                             color:
                                 !dose1 ? Color(0xff0A6CFF) : Color(0xffffffff),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           )),
                       onSelected: (i) {
                         setState(() {
@@ -250,7 +251,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                             color:
                                 !dose2 ? Color(0xff0A6CFF) : Color(0xffffffff),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           )),
                       onSelected: (i) {
                         setState(() {
@@ -276,7 +277,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                                 ? Color(0xff0A6CFF)
                                 : Color(0xffffffff),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           )),
                       onSelected: (i) {
                         setState(() {
@@ -302,7 +303,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                                 ? Color(0xff0A6CFF)
                                 : Color(0xffffffff),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           )),
                       onSelected: (i) {
                         setState(() {
@@ -328,7 +329,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                                 ? Color(0xff0A6CFF)
                                 : Color(0xffffffff),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           )),
                       onSelected: (i) {
                         setState(() {
@@ -354,7 +355,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                                 ? Color(0xff0A6CFF)
                                 : Color(0xffffffff),
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 15,
                           )),
                       onSelected: (i) {
                         setState(() {

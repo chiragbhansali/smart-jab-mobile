@@ -17,9 +17,11 @@ import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
@@ -74,21 +76,35 @@ class AlarmActivity : AppCompatActivity() {
         placeText.text = sharedPrefs.getString("place", "110001")
         slotsText.text = getString(R.string.slotsAvailable, sharedPrefs.getInt("slotsOpen", 2).toString())
 
+        val dismissLayout: ConstraintLayout = findViewById(R.id.dismissLayout)
+
+        dismissLayout.setOnClickListener {
+            dismiss()
+            finish()
+        }
+
+        val openLayout: ConstraintLayout = findViewById(R.id.openLayout)
+
+        openLayout.setOnClickListener{
+            dismiss()
+            val mainIntent = Intent(Intent.ACTION_VIEW , Uri.parse("https://selfregistration.cowin.gov.in/"))
+            startActivity(mainIntent)
+            finish()
+        }
+
         swipeButton = findViewById(R.id.swipeButton)
 
         swipeButton.setOnTouchListener(object : OnSwipeTouchListener(this@AlarmActivity) {
             override fun onSwipeLeft() {
                 super.onSwipeLeft()
                 dismiss()
-                v.cancel()
                 finish()
             }
 
             override fun onSwipeRight() {
                 super.onSwipeRight()
                 dismiss()
-                finish()
-                val mainIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://selfregistration.cowin.gov.in/"))
+                val mainIntent = Intent(Intent.ACTION_VIEW , Uri.parse("https://selfregistration.cowin.gov.in/"))
                 startActivity(mainIntent)
                 finish()
             }

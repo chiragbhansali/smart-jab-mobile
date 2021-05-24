@@ -168,7 +168,7 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                         } else {
                             slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose1"))
                         }
-                        if(session.getInt("available_capacity_dose1") > 0){
+                        if(session.getInt("available_capacity_dose1") > alarm.minAvailable){
                             areSlots = true
                         }
                         continue
@@ -180,7 +180,7 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                         } else {
                             slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose2"))
                         }
-                        if(session.getInt("available_capacity_dose2") > 0){
+                        if(session.getInt("available_capacity_dose2") > alarm.minAvailable){
                             areSlots = true
                         }
                         continue
@@ -192,7 +192,7 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                         slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity"))
                     }
 
-                    if(session.getInt("available_capacity") > 0){
+                    if(session.getInt("available_capacity") > alarm.minAvailable){
                         areSlots = true
                     }
                 }
