@@ -11,8 +11,6 @@ import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
 import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
 
-
-
 class HomeTab extends StatefulWidget {
   @override
   _HomeTabState createState() => _HomeTabState();
@@ -123,45 +121,6 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
-Future<Position> _determinePosition() async {
-  bool serviceEnabled;
-  LocationPermission permission;
-
-  // Test if location services are enabled.
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    // Location services are not enabled don't continue
-    // accessing the position and request users of the
-    // App to enable the location services.
-    return Future.error('Location services are disabled.');
-  }
-
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      // Permissions are denied, next time you could try
-      // requesting permissions again (this is also where
-      // Android's shouldShowRequestPermissionRationale
-      // returned true. According to Android guidelines
-      // your App should show an explanatory UI now.
-      return Future.error('Location permissions are denied');
-    }
-  }
-
-  if (permission == LocationPermission.deniedForever) {
-    // Permissions are denied forever, handle appropriately.
-    return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.');
-  }
-
-  // When we reach here, permissions are granted and we can
-  // continue accessing the position of the device.
-  return await Geolocator.getCurrentPosition();
-}
-
-
-
 class PincodeTab extends StatefulWidget {
   @override
   _PincodeTabState createState() => _PincodeTabState();
@@ -169,17 +128,90 @@ class PincodeTab extends StatefulWidget {
 
 class _PincodeTabState extends State<PincodeTab> {
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  FocusNode _focusPincode = new FocusNode();
+  FocusNode _focusRadius = new FocusNode();
   var pincode;
+  var radius;
   var pincodeController = TextEditingController();
+  var radiusController = TextEditingController(text: "1");
+  var loading = false;
 
   final storage = LocalStorage();
 
+  Future<dynamic> _determinePosition() async {
+    setState(() {
+      loading = true;
+    });
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      showToast("GPS is turned off");
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        showToast("Location Permissions denied");
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      showToast(
+          "Locations Permissions are denied. Please change them in phone settings.");
+      return;
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
+
+  void showToast(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Color(0xff323232),
+      content: Container(
+        height: 40,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(text,
+                style: TextStyle(
+                    color: Color(0xffE4E7EB),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 17)),
+          ],
+        ),
+      ),
+    ));
+  }
+
   void getSavedPincode() async {
     String storedPincode = await storage.getItem("pincode");
+    String storedRadius = await storage.getItem("radius");
     print(storedPincode);
-    if (storedPincode != null) {
+    if (storedPincode != null && storedRadius != null) {
       pincodeController.text = storedPincode;
       pincode = storedPincode;
+      radiusController.text = storedRadius;
+      radius = radius;
       setState(() {
         // pincode = storedPincode;
       });
@@ -202,69 +234,149 @@ class _PincodeTabState extends State<PincodeTab> {
       child: Column(
         children: [
           Form(
-            key: _formKey,
-            child: TextFormField(
-                controller: pincodeController,
-                onChanged: (value) {
-                  pincode = value;
-                },
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return "Please enter a PIN code";
-                  } else if (value.length != 6) {
-                    return "Invalid PIN Code";
-                  } else {
-                    return null;
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                      onTap: () {
+                        setState(() {
+                          FocusScope.of(context).requestFocus(_focusPincode);
+                        });
+                      },
+                      controller: pincodeController,
+                      onChanged: (value) {
+                        pincode = value;
+                      },
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return "Please enter a PIN code";
+                        } else if (value.length != 6) {
+                          return "Invalid PIN Code";
+                        } else {
+                          return null;
+                        }
+                      },
+                      keyboardType: TextInputType.number,
+                      cursorColor: Color(0xff0A6CFF),
+                      focusNode: _focusPincode,
+                      decoration: InputDecoration(
+                          labelStyle: TextStyle(
+                              color: _focusPincode.hasFocus
+                                  ? Color(0xff0A6CFF)
+                                  : Color(0xff7B8794)),
+                          errorStyle: TextStyle(fontSize: 16),
+                          hintStyle:
+                              TextStyle(fontSize: 16, color: Color(0xff0A6CFF)),
+                          labelText: "Enter your PIN Code",
+                          fillColor: Color(0xffF5F7FA),
+                          filled: true,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(width: 2, color: Color(0xff0A6CFF)),
+                          ),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: BorderSide(
+                                  width: 2, color: Color(0xffE4E7EB))),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: BorderSide(
+                                  width: 2, color: Color(0xffE4E7EB))),
+                          disabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: BorderSide(
+                                  width: 2, color: Color(0xffE4E7EB))))),
+                  SizedBox(height: 15),
+                  TextFormField(
+                      onTap: () {
+                        setState(() {
+                          FocusScope.of(context).requestFocus(_focusRadius);
+                        });
+                      },
+                      controller: radiusController,
+                      onChanged: (value) {
+                        radius = value;
+                      },
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return "Please enter a Radius";
+                        } else if (int.parse(value) > 40) {
+                          return "Please enter a radius less than 40km";
+                        } else if (int.parse(value) < 0) {
+                          return "Please enter a radius more than 0km";
+                        } else {
+                          return null;
+                        }
+                      },
+                      keyboardType: TextInputType.number,
+                      cursorColor: Color(0xff0A6CFF),
+                      focusNode: _focusRadius,
+                      decoration: InputDecoration(
+                          labelStyle: TextStyle(
+                              color: _focusRadius.hasFocus
+                                  ? Color(0xff0A6CFF)
+                                  : Color(0xff7B8794)),
+                          errorStyle: TextStyle(fontSize: 16),
+                          hintStyle:
+                              TextStyle(fontSize: 16, color: Color(0xff0A6CFF)),
+                          labelText: "Enter a Radius in km",
+                          fillColor: Color(0xffF5F7FA),
+                          filled: true,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(width: 2, color: Color(0xff0A6CFF)),
+                          ),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: BorderSide(
+                                  width: 2, color: Color(0xffE4E7EB))),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: BorderSide(
+                                  width: 2, color: Color(0xffE4E7EB))),
+                          disabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: BorderSide(
+                                  width: 2, color: Color(0xffE4E7EB))))),
+                ],
+              )),
+          // Current location button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  // Get the position
+                  Position position = await _determinePosition();
+                  // Get the placemarks
+                  if (position != null) {
+                    List<Placemark> placemarks = await placemarkFromCoordinates(
+                        position.latitude, position.longitude);
+                    pincode = placemarks[0].postalCode;
+                    pincodeController.text = placemarks[0].postalCode;
+                    setState(() {
+                      loading = false;
+                    });
                   }
                 },
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                    errorStyle: TextStyle(fontSize: 16),
-                    hintStyle: TextStyle(fontSize: 16),
-                    labelText: "Enter your PIN Code",
-                    fillColor: Color(0xffF5F7FA),
-                    filled: true,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                        borderSide:
-                            BorderSide(width: 4, color: Color(0xffE4E7EB))))),
-          ),
-          // Current location button
-          TextButton.icon(
-            onPressed: () async {
-              // Get the position
-              Position position = await _determinePosition();
-              // Get the placemarks
-              List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-              // print(placemarks[0].postalCode);
-              // Setting the placemarks' postalcode to the pincode
-              pincode = placemarks[0].postalCode;
-              pincodeController.text = placemarks[0].postalCode;
-              setState(() {
-              });
-              // automatically go to the next screen
-              /*var isValid = _formKey.currentState.validate();
-              if (isValid) {
-                await storage.setItem("pincode", pincode);
-                Navigator.push(
-                    context,
-                    PageTransition(
-                        child: AvailableDaysSlots(
-                          pincode: pincode,
-                        ),
-                        type: PageTransitionType.bottomToTop,
-                        duration: Duration(milliseconds: 250),
-                        reverseDuration: Duration(milliseconds: 250)));
-              }*/
-            },
-            label: Text("Use my current location",
-                style: TextStyle(
-                  fontSize: 16.5,
-                  color: Color.fromRGBO(10, 108, 255, 1),
-                  fontWeight: FontWeight.w500,
-                )
-            ),
-            icon: Icon(Icons.my_location , size: 16.5, color: Color.fromRGBO(10, 108, 255, 1)),
+                label: Text("Use my current location",
+                    style: TextStyle(
+                      fontSize: 16.5,
+                      color: Color.fromRGBO(10, 108, 255, 1),
+                      fontWeight: FontWeight.w500,
+                    )),
+                icon: Icon(Icons.my_location,
+                    size: 16.5, color: Color.fromRGBO(10, 108, 255, 1)),
+              ),
+              loading
+                  ? Container(
+                      height: 15,
+                      width: 15,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ))
+                  : Container()
+            ],
           ),
           Expanded(
             flex: 1,
@@ -275,6 +387,7 @@ class _PincodeTabState extends State<PincodeTab> {
               var isValid = _formKey.currentState.validate();
               if (isValid) {
                 await storage.setItem("pincode", pincode);
+                await storage.setItem("radius", radius);
                 Navigator.push(
                     context,
                     PageTransition(
@@ -303,9 +416,7 @@ class _PincodeTabState extends State<PincodeTab> {
               ),
             ),
           ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height / 14,
-          )
+          Expanded(child: Container())
         ],
       ),
     );
@@ -321,10 +432,76 @@ class _DistrictsTabState extends State<DistrictsTab> {
   String _chosenStateId = "1";
   int _chosenDistrictId = 1;
   String districtName;
+  bool loading = false;
 
   var storage = LocalStorage();
 
   Map<dynamic, dynamic> districts;
+
+  Future<dynamic> _determinePosition() async {
+    setState(() {
+      loading = true;
+    });
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      showToast("GPS is turned off");
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        showToast("Location Permissions denied");
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      showToast(
+          "Locations Permissions are denied. Please change them in phone settings.");
+      return;
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
+
+  void showToast(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Color(0xff323232),
+      content: Container(
+        height: 40,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(text,
+                style: TextStyle(
+                    color: Color(0xffE4E7EB),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 17)),
+          ],
+        ),
+      ),
+    ));
+  }
 
   void getStored() async {
     String storedStateId = await storage.getItem("stateId");
@@ -372,47 +549,45 @@ class _DistrictsTabState extends State<DistrictsTab> {
       child: Column(
         mainAxisSize: MainAxisSize.max,
         children: [
-          Container(
-              height: 60,
-              child: DropdownBelow(
-                itemWidth: MediaQuery.of(context).size.width - 56,
-                itemTextstyle: TextStyle(
+          DropdownBelow(
+            itemWidth: MediaQuery.of(context).size.width - 56,
+            itemTextstyle: TextStyle(
+                fontSize: 16,
+                //fontWeight: FontWeight.w500,
+                color: Color(0XFF7B8794)),
+            boxTextstyle: TextStyle(
+                fontSize: 16,
+                //fontWeight: FontWeight.w500,
+                color: Color(0XFF7B8794)),
+            boxPadding: EdgeInsets.fromLTRB(13, 12, 0, 12),
+            boxHeight: 60,
+            boxWidth: MediaQuery.of(context).size.width - 54,
+            value: _chosenStateId ?? "1",
+            hint: Text(statesAndDistricts[_chosenStateId]['name'],
+                style: TextStyle(
                     fontSize: 16,
                     //fontWeight: FontWeight.w500,
-                    color: Color(0XFF7B8794)),
-                boxTextstyle: TextStyle(
-                    fontSize: 16,
-                    //fontWeight: FontWeight.w500,
-                    color: Color(0XFF7B8794)),
-                boxPadding: EdgeInsets.fromLTRB(13, 12, 0, 12),
-                boxHeight: 60,
-                boxWidth: MediaQuery.of(context).size.width - 54,
-                value: _chosenStateId ?? "1",
-                hint: Text(statesAndDistricts[_chosenStateId]['name'],
-                    style: TextStyle(
-                        fontSize: 16,
-                        //fontWeight: FontWeight.w500,
-                        color: Color(0XFF323F4B))),
-                onChanged: (v) {
-                  print(v);
-                  setState(() {
-                    _chosenStateId = v;
-                  });
-                  fillDistrictsMap(v);
-                },
-                items: statesAndDistricts.keys
-                    .toList()
-                    .map((e) => DropdownMenuItem(
-                          value: e,
-                          child: Text(
-                            statesAndDistricts[e]['name'],
-                            style: TextStyle(
-                                color: Color(0xff323F4B), fontSize: 16),
-                          ),
-                        ))
-                    .toList(),
-              )),
-          SizedBox(height: 12),
+                    color: Color(0XFF323F4B))),
+            onChanged: (v) {
+              print(v);
+              setState(() {
+                _chosenStateId = v;
+              });
+              fillDistrictsMap(v);
+            },
+            items: statesAndDistricts.keys
+                .toList()
+                .map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(
+                        statesAndDistricts[e]['name'],
+                        style:
+                            TextStyle(color: Color(0xff323F4B), fontSize: 16),
+                      ),
+                    ))
+                .toList(),
+          ),
+          SizedBox(height: 15),
           DropdownBelow(
               itemWidth: MediaQuery.of(context).size.width - 56,
               itemTextstyle: TextStyle(
@@ -447,6 +622,43 @@ class _DistrictsTabState extends State<DistrictsTab> {
                                 color: Color(0xff323F4B), fontSize: 16)),
                       ))
                   .toList()),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  // Get the position
+                  Position position = await _determinePosition();
+                  // Get the placemarks
+                  if (position != null) {
+                    List<Placemark> placemarks = await placemarkFromCoordinates(
+                        position.latitude, position.longitude);
+                    // pincode = placemarks[0].postalCode;
+                    // pincodeController.text = placemarks[0].postalCode;
+                    setState(() {
+                      loading = false;
+                    });
+                  }
+                },
+                label: Text("Use my current location",
+                    style: TextStyle(
+                      fontSize: 16.5,
+                      color: Color.fromRGBO(10, 108, 255, 1),
+                      fontWeight: FontWeight.w500,
+                    )),
+                icon: Icon(Icons.my_location,
+                    size: 16.5, color: Color.fromRGBO(10, 108, 255, 1)),
+              ),
+              loading
+                  ? Container(
+                      height: 15,
+                      width: 15,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ))
+                  : Container()
+            ],
+          ),
           Expanded(
             child: Container(),
           ),
@@ -483,9 +695,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
               ),
             ),
           ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height / 14,
-          )
+          Expanded(child: Container())
         ],
       ),
     );
