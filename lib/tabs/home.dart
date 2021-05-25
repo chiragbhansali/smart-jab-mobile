@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
 import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
+
+
 
 class HomeTab extends StatefulWidget {
   @override
@@ -117,6 +123,45 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
+Future<Position> _determinePosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  // Test if location services are enabled.
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    // Location services are not enabled don't continue
+    // accessing the position and request users of the
+    // App to enable the location services.
+    return Future.error('Location services are disabled.');
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      // Permissions are denied, next time you could try
+      // requesting permissions again (this is also where
+      // Android's shouldShowRequestPermissionRationale
+      // returned true. According to Android guidelines
+      // your App should show an explanatory UI now.
+      return Future.error('Location permissions are denied');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    // Permissions are denied forever, handle appropriately.
+    return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.');
+  }
+
+  // When we reach here, permissions are granted and we can
+  // continue accessing the position of the device.
+  return await Geolocator.getCurrentPosition();
+}
+
+
+
 class PincodeTab extends StatefulWidget {
   @override
   _PincodeTabState createState() => _PincodeTabState();
@@ -183,6 +228,43 @@ class _PincodeTabState extends State<PincodeTab> {
                         borderRadius: BorderRadius.circular(5),
                         borderSide:
                             BorderSide(width: 4, color: Color(0xffE4E7EB))))),
+          ),
+          // Current location button
+          TextButton.icon(
+            onPressed: () async {
+              // Get the position
+              Position position = await _determinePosition();
+              // Get the placemarks
+              List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+              // print(placemarks[0].postalCode);
+              // Setting the placemarks' postalcode to the pincode
+              pincode = placemarks[0].postalCode;
+              pincodeController.text = placemarks[0].postalCode;
+              setState(() {
+              });
+              // automatically go to the next screen
+              /*var isValid = _formKey.currentState.validate();
+              if (isValid) {
+                await storage.setItem("pincode", pincode);
+                Navigator.push(
+                    context,
+                    PageTransition(
+                        child: AvailableDaysSlots(
+                          pincode: pincode,
+                        ),
+                        type: PageTransitionType.bottomToTop,
+                        duration: Duration(milliseconds: 250),
+                        reverseDuration: Duration(milliseconds: 250)));
+              }*/
+            },
+            label: Text("Use my current location",
+                style: TextStyle(
+                  fontSize: 16.5,
+                  color: Color.fromRGBO(10, 108, 255, 1),
+                  fontWeight: FontWeight.w500,
+                )
+            ),
+            icon: Icon(Icons.my_location , size: 16.5, color: Color.fromRGBO(10, 108, 255, 1)),
           ),
           Expanded(
             flex: 1,
