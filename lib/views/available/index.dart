@@ -784,7 +784,7 @@ class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
                     place: widget.place,
                     filters: widget.filters,
                   ),
-                  type: PageTransitionType.leftToRight,
+                  type: PageTransitionType.bottomToTop,
                   duration: Duration(milliseconds: 250),
                   reverseDuration: Duration(milliseconds: 250)));
         }

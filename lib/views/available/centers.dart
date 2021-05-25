@@ -184,7 +184,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                     style: TextStyle(
                         color: Color(0xff323F4B),
                         fontWeight: FontWeight.w500,
-                        fontSize: 20),
+                        fontSize: 19),
                   ),
                   Expanded(child: Container()),
                   IconButton(

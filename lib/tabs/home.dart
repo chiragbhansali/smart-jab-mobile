@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
@@ -194,10 +195,13 @@ class _PincodeTabState extends State<PincodeTab> {
                 await storage.setItem("pincode", pincode);
                 Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => AvailableDaysSlots(
-                              pincode: pincode,
-                            )));
+                    PageTransition(
+                        child: AvailableDaysSlots(
+                          pincode: pincode,
+                        ),
+                        type: PageTransitionType.bottomToTop,
+                        duration: Duration(milliseconds: 250),
+                        reverseDuration: Duration(milliseconds: 250)));
               }
             },
             child: Container(
@@ -247,6 +251,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
       fillDistrictsMap(storedStateId);
       _chosenStateId = storedStateId;
       _chosenDistrictId = storedDistrictId;
+      districtName = districts[storedDistrictId];
       setState(() {});
     }
   }
@@ -279,6 +284,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 27),
       margin: EdgeInsets.only(top: 40),
       child: Column(
@@ -368,12 +374,15 @@ class _DistrictsTabState extends State<DistrictsTab> {
               await storage.setItem("districtId", _chosenDistrictId);
               Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => AvailableDaysSlots(
-                            stateId: _chosenStateId,
-                            districtId: _chosenDistrictId,
-                            districtName: districtName,
-                          )));
+                  PageTransition(
+                      child: AvailableDaysSlots(
+                        stateId: _chosenStateId,
+                        districtId: _chosenDistrictId,
+                        districtName: districtName,
+                      ),
+                      type: PageTransitionType.bottomToTop,
+                      duration: Duration(milliseconds: 250),
+                      reverseDuration: Duration(milliseconds: 250)));
             },
             child: Container(
               width: MediaQuery.of(context).size.width - 54,
