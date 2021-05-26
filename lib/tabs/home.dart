@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
@@ -10,6 +11,7 @@ import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
 import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
+import "package:http/http.dart" as http;
 
 class HomeTab extends StatefulWidget {
   @override
@@ -633,6 +635,22 @@ class _DistrictsTabState extends State<DistrictsTab> {
                   if (position != null) {
                     List<Placemark> placemarks = await placemarkFromCoordinates(
                         position.latitude, position.longitude);
+
+                    var res = await http.get(Uri.parse(
+                        "https://smartjab.in/api/p/${placemarks[0].postalCode}/0"));
+
+                    var body = jsonDecode(res.body);
+                    print(body['districts']);
+
+                    var storedStateId = body['districts'][0]['state_id'];
+                    var storedDistrictId = body['districts'][0]['id'];
+
+                    fillDistrictsMap(storedStateId);
+                    _chosenStateId = storedStateId;
+                    _chosenDistrictId = storedDistrictId;
+                    districtName = districts[storedDistrictId];
+                    setState(() {});
+
                     // pincode = placemarks[0].postalCode;
                     // pincodeController.text = placemarks[0].postalCode;
                     setState(() {
