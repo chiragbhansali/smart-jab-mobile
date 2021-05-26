@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import okhttp3.OkHttpClient
@@ -20,6 +22,23 @@ import java.util.concurrent.TimeUnit
 class MainActivity : FlutterActivity() {
 
     private var ALARM_CHECK_WORKER = "ALARM_CHECK_WORKER"
+    private val CHANNEL = "com.jabalarm/platform"
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+                call, result ->
+            if (call.method == ""){
+
+            } 
+//            if (call.method = ""){
+//
+//            }
+            else {
+                result.notImplemented()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,12 +1,19 @@
 import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
 import 'package:vaccine_slot_notifier/DatabaseProvider.dart';
 import 'package:vaccine_slot_notifier/models/alarm.dart';
 import 'package:vaccine_slot_notifier/widgets/editAlarmBottomSheet.dart';
+
+const platform = const MethodChannel('com.jabalarm/platform');
 
 class AlarmsTab extends StatefulWidget {
   @override
   _AlarmsTabState createState() => _AlarmsTabState();
 }
+
+// add this line wherever platform required
+// final int result = await platform.invokeMethod(<NAME>)
+
 
 class _AlarmsTabState extends State<AlarmsTab> {
   bool isLoading = true;
