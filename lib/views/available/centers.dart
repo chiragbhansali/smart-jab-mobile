@@ -130,7 +130,17 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
     widget.dates.keys.toList().forEach((date) {
       datesArray.add({"date": date, "slots": widget.dates[date]});
     });
-    datesArray.sort((a, b) => a['date'].compareTo(b['date']));
+    datesArray.sort((a, b) {
+      DateTime aDate = DateTime.parse(
+          "${a['date'].substring(6)}-${a['date'].substring(3, 5)}-${a['date'].substring(0, 2)} 14:04:24.367573");
+      DateTime bDate = DateTime.parse(
+          "${b['date'].substring(6)}-${b['date'].substring(3, 5)}-${b['date'].substring(0, 2)} 14:04:24.367573");
+      if (aDate.isBefore(bDate)) {
+        return 0;
+      } else {
+        return 1;
+      }
+    });
     selectedDateIndex = datesArray
         .indexWhere((element) => element['date'] == widget.selectedDate);
     fillCentersList();

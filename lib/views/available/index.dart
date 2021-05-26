@@ -15,8 +15,13 @@ class AvailableDaysSlots extends StatefulWidget {
   final int districtId;
   final String districtName;
   final String stateId;
+  final String radius;
   AvailableDaysSlots(
-      {this.pincode, this.districtId, this.stateId, this.districtName});
+      {this.pincode,
+      this.districtId,
+      this.stateId,
+      this.districtName,
+      this.radius});
   @override
   _AvailableDaysSlotsState createState() => _AvailableDaysSlotsState();
 }
@@ -41,6 +46,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
   int _chosenDistrictId;
   String districtName;
   String pincode;
+  String radius;
 
   Map<dynamic, dynamic> districts;
 
@@ -133,7 +139,17 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       slots.keys.toList().forEach((date) {
         datesArray.add({"date": date, "slots": slots[date]});
       });
-      datesArray.sort((a, b) => a['date'].compareTo(b['date']));
+      datesArray.sort((a, b) {
+        DateTime aDate = DateTime.parse(
+            "${a['date'].substring(6)}-${a['date'].substring(3, 5)}-${a['date'].substring(0, 2)} 14:04:24.367573");
+        DateTime bDate = DateTime.parse(
+            "${b['date'].substring(6)}-${b['date'].substring(3, 5)}-${b['date'].substring(0, 2)} 14:04:24.367573");
+        if (aDate.isBefore(bDate)) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
 
       setState(() {
         noSlots = false;
@@ -144,21 +160,57 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
     }
   }
 
-  void getSlotsThroughPincode(pincode) async {
+  void getSlotsThroughPincode(pincode, radius) async {
     if (pincode != null) {
       setState(() {
         eighteenPlus = false;
         fortyfivePlus = false;
         covaxin = false;
         covishield = false;
+        loading = true;
       });
+
+      var res = await http
+          .get(Uri.parse("https://smartjab.in/api/p/$pincode/$radius"));
+      var radiusData = jsonDecode(res.body);
+
+      Map<dynamic, dynamic> body = {"centers": []};
       var date = DateTime.now();
       var formattedDate = DateFormat('dd-MM-yyyy').format(date);
-      var data = await http.get(Uri.parse(
-          "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=$pincode&date=$formattedDate"));
-      var body = jsonDecode(data.body);
+      List<String> pincodesArray = [];
+
+      radiusData['pincodes'].forEach((p) {
+        pincodesArray.add(p['pincode']);
+      });
+
+      for (var district in radiusData['districts']) {
+        var data = await http.get(Uri.parse(
+            "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${district['id']}&date=$formattedDate"));
+        var json = jsonDecode(data.body);
+        json['centers'].forEach((center) {
+          //print(center['pincode'].toString());
+          if (pincodesArray.contains(center['pincode'].toString())) {
+            //print(center['pincode']);
+            body['centers'].add(center);
+          }
+        });
+      }
+
+      // var data = await http.get(Uri.parse(
+      //     "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=$pincode&date=$formattedDate"));
+      // var body = jsonDecode(data.body);
       apiData = body;
+      if (body == null || body['centers'] == null) {
+        setState(() {
+          noSlots = true;
+          loading = false;
+        });
+        return;
+      }
+
       if (body['centers'].length < 1) {
+        print(body['centers'].length);
+        print("here2");
         setState(() {
           noSlots = true;
           loading = false;
@@ -188,6 +240,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       });
 
       if (isNoSlots) {
+        print("here");
         setState(() {
           noSlots = true;
           loading = false;
@@ -195,11 +248,22 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         return;
       }
       List datesArray = [];
+      print("here5");
 
       slots.keys.toList().forEach((date) {
         datesArray.add({"date": date, "slots": slots[date]});
       });
-      datesArray.sort((a, b) => a['date'].compareTo(b['date']));
+      datesArray.sort((a, b) {
+        DateTime aDate = DateTime.parse(
+            "${a['date'].substring(6)}-${a['date'].substring(3, 5)}-${a['date'].substring(0, 2)} 14:04:24.367573");
+        DateTime bDate = DateTime.parse(
+            "${b['date'].substring(6)}-${b['date'].substring(3, 5)}-${b['date'].substring(0, 2)} 14:04:24.367573");
+        if (aDate.isBefore(bDate)) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
 
       setState(() {
         noSlots = false;
@@ -302,7 +366,17 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
     slots.keys.toList().forEach((date) {
       datesArray.add({"date": date, "slots": slots[date]});
     });
-    datesArray.sort((a, b) => a['date'].compareTo(b['date']));
+    datesArray.sort((a, b) {
+      DateTime aDate = DateTime.parse(
+          "${a['date'].substring(6)}-${a['date'].substring(3, 5)}-${a['date'].substring(0, 2)} 14:04:24.367573");
+      DateTime bDate = DateTime.parse(
+          "${b['date'].substring(6)}-${b['date'].substring(3, 5)}-${b['date'].substring(0, 2)} 14:04:24.367573");
+      if (aDate.isBefore(bDate)) {
+        return 0;
+      } else {
+        return 1;
+      }
+    });
 
     apiData = body;
     setState(() {
@@ -320,8 +394,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
     if (widget.pincode != null) {
       setState(() {
         pincode = widget.pincode;
+        radius = widget.radius;
       });
-      getSlotsThroughPincode(widget.pincode);
+      getSlotsThroughPincode(widget.pincode, widget.radius);
     } else {
       setState(() {
         _chosenStateId = widget.stateId;
@@ -357,36 +432,93 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
               widget.pincode != null
                   ? Form(
                       key: _pincodeKey,
-                      child: TextFormField(
-                          initialValue: widget.pincode,
-                          onFieldSubmitted: (value) {
-                            var isValid = _pincodeKey.currentState.validate();
-                            if (isValid) {
-                              getSlotsThroughPincode(value);
-                              setState(() {
-                                pincode = value;
-                              });
-                            }
-                          },
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return "Please enter a PIN code";
-                            } else if (value.length != 6) {
-                              return "Invalid PIN Code";
-                            } else {
-                              return null;
-                            }
-                          },
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                              errorStyle: TextStyle(fontSize: 16),
-                              labelText: "PIN Code",
-                              fillColor: Color(0xffF5F7FA),
-                              filled: true,
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                  borderSide: BorderSide(
-                                      width: 4, color: Color(0xffE4E7EB))))),
+                      child: Column(
+                        children: [
+                          TextFormField(
+                              initialValue: widget.pincode,
+                              onFieldSubmitted: (value) {
+                                var isValid =
+                                    _pincodeKey.currentState.validate();
+                                if (isValid) {
+                                  getSlotsThroughPincode(value, radius);
+                                  setState(() {
+                                    pincode = value;
+                                  });
+                                }
+                              },
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return "Please enter a PIN code";
+                                } else if (value.length != 6) {
+                                  return "Invalid PIN Code";
+                                } else {
+                                  return null;
+                                }
+                              },
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                  errorStyle: TextStyle(fontSize: 16),
+                                  labelText: "PIN Code",
+                                  fillColor: Color(0xffF5F7FA),
+                                  filled: true,
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      borderSide: BorderSide(
+                                          width: 2, color: Color(0xffE4E7EB))),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      borderSide: BorderSide(
+                                          width: 2, color: Color(0xffE4E7EB))),
+                                  disabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      borderSide: BorderSide(
+                                          width: 2,
+                                          color: Color(0xffE4E7EB))))),
+                          SizedBox(height: 15),
+                          TextFormField(
+                              initialValue: widget.radius,
+                              onFieldSubmitted: (value) {
+                                var isValid =
+                                    _pincodeKey.currentState.validate();
+                                if (isValid) {
+                                  getSlotsThroughPincode(pincode, value);
+                                  setState(() {
+                                    radius = value;
+                                  });
+                                }
+                              },
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return "Please enter a Radius";
+                                } else if (int.parse(value) > 40) {
+                                  return "Please enter a radius less than 40km";
+                                } else if (int.parse(value) < 0) {
+                                  return "Please enter a radius more than 0km";
+                                } else {
+                                  return null;
+                                }
+                              },
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                  errorStyle: TextStyle(fontSize: 16),
+                                  labelText: "Radius in km",
+                                  fillColor: Color(0xffF5F7FA),
+                                  filled: true,
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      borderSide: BorderSide(
+                                          width: 2, color: Color(0xffE4E7EB))),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      borderSide: BorderSide(
+                                          width: 2, color: Color(0xffE4E7EB))),
+                                  disabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      borderSide: BorderSide(
+                                          width: 2,
+                                          color: Color(0xffE4E7EB))))),
+                        ],
+                      ),
                     )
                   : Container(
                       child: Column(
