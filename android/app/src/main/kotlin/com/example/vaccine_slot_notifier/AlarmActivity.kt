@@ -5,6 +5,8 @@ import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
@@ -20,6 +22,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -41,7 +44,19 @@ class AlarmActivity : AppCompatActivity() {
             mp?.release()
             mp = null
             val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
-            mp = MediaPlayer.create(this, defaultRingtoneUri)
+            mp = MediaPlayer()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mp?.setAudioAttributes(AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                )
+            } else {
+                mp?.setAudioStreamType(AudioManager.STREAM_ALARM)
+            }
+//            mp = MediaPlayer.create(this, defaultRingtoneUri)
+            mp?.setDataSource(this, defaultRingtoneUri)
+            mp?.prepare()
             mp?.start()
         }
 

@@ -4,6 +4,8 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
@@ -43,8 +45,20 @@ class AlarmActionsReceiver : BroadcastReceiver() {
                 }
 
                 val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-
-                mp = MediaPlayer.create(context, defaultRingtoneUri)
+                mp = MediaPlayer()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mp?.setAudioAttributes(
+                        AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                    )
+                } else {
+                    mp?.setAudioStreamType(AudioManager.STREAM_ALARM)
+                }
+                mp?.setDataSource(context, defaultRingtoneUri)
+                mp?.prepare()
+//                mp = MediaPlayer.create(context, defaultRingtoneUri)
                 mp?.start()
             }else if(action == "OPENCOWIN"){
 
