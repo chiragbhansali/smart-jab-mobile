@@ -22,14 +22,14 @@ import java.util.concurrent.TimeUnit
 class MainActivity : FlutterActivity() {
 
     private var ALARM_CHECK_WORKER = "ALARM_CHECK_WORKER"
-    private val CHANNEL = "com.jabalarm/platform"
+    private val CHANNEL = "com.arnav.smartjab/flutter"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
                 call, result ->
             if (call.method == ""){
-
+                result.success("")
             } 
 //            if (call.method = ""){
 //

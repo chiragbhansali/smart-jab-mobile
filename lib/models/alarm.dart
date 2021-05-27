@@ -11,6 +11,7 @@ class Alarm {
   String dose1;
   String dose2;
   int minAvailable;
+  int radius;
 
   Alarm(
       {this.id,
@@ -24,7 +25,8 @@ class Alarm {
       this.covishield,
       this.dose1,
       this.dose2,
-      this.minAvailable});
+      this.minAvailable,
+      this.radius});
 
   Map<String, dynamic> toMap() => {
         "id": id,
@@ -37,6 +39,7 @@ class Alarm {
         "covaxin": covaxin,
         "covishield": covishield,
         "minAvailable": minAvailable,
+        "radius": radius,
         "dose1": dose1,
         "dose2": dose2
       };
@@ -53,5 +56,6 @@ class Alarm {
       covishield: json['covishield'],
       dose1: json['dose1'],
       dose2: json['dose2'],
-      minAvailable: json['minAvailable']);
+      minAvailable: json['minAvailable'],
+      radius: json['radius']);
 }

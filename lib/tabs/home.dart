@@ -4,14 +4,14 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import "package:http/http.dart" as http;
+import 'package:page_transition/page_transition.dart';
 import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
 import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
-import "package:http/http.dart" as http;
 
 class HomeTab extends StatefulWidget {
   @override
@@ -47,6 +47,7 @@ class _HomeTabState extends State<HomeTab> {
                     minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
+
                       //mainAxisSize: MainAxisSize.min,
                       //mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,

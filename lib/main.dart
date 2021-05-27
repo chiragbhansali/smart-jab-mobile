@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:vaccine_slot_notifier/DatabaseProvider.dart';
-import 'package:vaccine_slot_notifier/DatabaseProvider.dart';
 import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/jabalarm.dart';
 
@@ -13,7 +12,7 @@ Future<void> main() async {
   runApp(JabAlarmApp());
 }
 
-/// Example app for Espresso plugin.
+// Operator Thin Italic
 class JabAlarmApp extends StatelessWidget {
   // This widget is the root of your application.
 

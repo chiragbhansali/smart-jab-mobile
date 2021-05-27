@@ -183,6 +183,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         pincodesArray.add(p['pincode']);
       });
 
+      print(pincodesArray);
       for (var district in radiusData['districts']) {
         var data = await http.get(Uri.parse(
             "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${district['id']}&date=$formattedDate"));
@@ -355,6 +356,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       }
     });
 
+    print("AlarmWorker" + slots.toString());
+
     if (isNoSlots) {
       setState(() {
         noSlots = true;
@@ -389,7 +392,6 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.pincode != null) {
       setState(() {
@@ -436,11 +438,19 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                         children: [
                           TextFormField(
                               initialValue: widget.pincode,
+                              onChanged: (value) {
+                                var isValid =
+                                    _pincodeKey.currentState.validate();
+                                if (isValid) {
+                                  pincode = value;
+                                }
+                              },
                               onFieldSubmitted: (value) {
                                 var isValid =
                                     _pincodeKey.currentState.validate();
                                 if (isValid) {
                                   getSlotsThroughPincode(value, radius);
+                                  print(_pincodeKey.currentState);
                                   setState(() {
                                     pincode = value;
                                   });
@@ -477,6 +487,13 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                           SizedBox(height: 15),
                           TextFormField(
                               initialValue: widget.radius,
+                              onChanged: (value) {
+                                var isValid =
+                                    _pincodeKey.currentState.validate();
+                                if (isValid) {
+                                  radius = value;
+                                }
+                              },
                               onFieldSubmitted: (value) {
                                 var isValid =
                                     _pincodeKey.currentState.validate();
@@ -785,6 +802,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                               dose1: dose1.toString(),
                               dose2: dose2.toString(),
                               minAvailable: 1,
+                              radius: radius == null
+                                  ? null
+                                  : double.parse(radius).round(),
                               isOn: "true"))
                           : Container(
                               margin: EdgeInsets.only(top: 15),
