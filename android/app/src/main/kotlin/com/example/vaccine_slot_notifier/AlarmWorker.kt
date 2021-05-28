@@ -111,7 +111,7 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
             if (alarm.pincode != null) {
                 centers = JSONArray()
-                val nearbyRequest = Request.Builder().url("https://smartjab.in/api/p/${alarm.pincode}/${alarm.radius}").build()
+                val nearbyRequest = Request.Builder().url("https://smartjab.in/api/p/${alarm.pincode}/${alarm.radius ?: "0"}").build()
                 val nearbyResponse: Response = httpClient.newCall(nearbyRequest).execute()
                 val nearbyJson = JSONObject(nearbyResponse.body()!!.string())
 
@@ -262,7 +262,6 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
             var isNoSlots: Boolean = true
             var slotsOpen = 0
 
-            Log.d("AlarmWorker", slots.toString())
 
             slots.keys().forEach {
                 if (slots.getInt(it) > alarm.minAvailable) {
@@ -270,8 +269,6 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                     slotsOpen += slots.getInt(it)
                 }
             }
-
-            Log.d("AlarmWorker", isNoSlots.toString())
 
             if (!isNoSlots) {
                 triggerAlarm = true

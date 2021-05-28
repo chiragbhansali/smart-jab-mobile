@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -81,6 +82,9 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
 
       center['name'] = c['name'];
       center['address'] = "${c['block_name']}, ${c['pincode']}";
+      center['mapsAddress'] = c['address'];
+      center['lat'] = c['lat'];
+      center['long'] = c['long'];
       center['fee'] = c['fee_type'];
 
       bool sessionNotFound = true;
@@ -387,12 +391,14 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
             ),
             Container(
                 child: Expanded(
-              child: ListView.builder(
-                itemCount: centersList.length,
-                itemBuilder: (context, index) {
-                  //print(centersList);
-                  return CenterCard(centersList[index]);
-                },
+              child: Scrollbar(
+                child: ListView.builder(
+                  itemCount: centersList.length,
+                  itemBuilder: (context, index) {
+                    //print(centersList);
+                    return CenterCard(centersList[index]);
+                  },
+                ),
               ),
             ))
           ],
@@ -416,6 +422,7 @@ class _CenterCardState extends State<CenterCard> {
       onTap: () {
         showModalBottomSheet(
             context: context,
+            isScrollControlled: true,
             builder: (context) {
               return Wrap(
                 children: [
@@ -433,22 +440,53 @@ class _CenterCardState extends State<CenterCard> {
                                 color: Color(0xff323F4B),
                                 fontWeight: FontWeight.w600)),
                       ),
-                      ListTile(
-                        onTap: () async {
-                          var _url = "https://selfregistration.cowin.gov.in/";
-                          await canLaunch(_url)
-                              ? await launch(_url)
-                              : throw 'Could not launch $_url';
-                        },
-                        leading: Icon(Icons.open_in_new,
-                            color: Color(0xff616E7C), size: 28),
-                        title: Text(
-                          "Open CoWin",
-                          style: TextStyle(
-                              color: Color(0xff323F4B),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500),
-                        ),
+                      Column(
+                        children: [
+                          ListTile(
+                            onTap: () async {
+                              print(widget.center);
+                              const platform = const MethodChannel(
+                                'com.arnav.smartjab/flutter',
+                              );
+                              try {
+                                var result =
+                                    await platform.invokeMethod("openMaps", {
+                                  "address":
+                                      "${widget.center['name']}, ${widget.center['mapsAddress']}, ${widget.center['address']}",
+                                  "lat": widget.center['lat'],
+                                  "long": widget.center['long']
+                                });
+                              } catch (e) {}
+                            },
+                            leading: Icon(Icons.directions,
+                                color: Color(0xff616E7C), size: 28),
+                            title: Text(
+                              "Get Directions",
+                              style: TextStyle(
+                                  color: Color(0xff323F4B),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          ListTile(
+                            onTap: () async {
+                              var _url =
+                                  "https://selfregistration.cowin.gov.in/";
+                              await canLaunch(_url)
+                                  ? await launch(_url)
+                                  : throw 'Could not launch $_url';
+                            },
+                            leading: Icon(Icons.open_in_new,
+                                color: Color(0xff616E7C), size: 28),
+                            title: Text(
+                              "Open CoWin",
+                              style: TextStyle(
+                                  color: Color(0xff323F4B),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 20)
                     ],

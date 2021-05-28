@@ -356,8 +356,6 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       }
     });
 
-    print("AlarmWorker" + slots.toString());
-
     if (isNoSlots) {
       setState(() {
         noSlots = true;

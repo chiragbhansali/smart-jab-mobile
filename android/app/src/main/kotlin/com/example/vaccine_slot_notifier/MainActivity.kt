@@ -3,6 +3,7 @@ package com.example.vaccine_slot_notifier
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -26,11 +27,13 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
-                call, result ->
-            if (call.method == ""){
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+            if (call.method == "openMaps") {
+                val url = Uri.parse("geo:${call.argument<Int>("lat")},${call.argument<Int>("long")}?q=${call.argument<String>("address")}")
+                val mapIntent = Intent(Intent.ACTION_VIEW, url)
+                startActivity(mapIntent)
                 result.success("")
-            } 
+            }
 //            if (call.method = ""){
 //
 //            }
