@@ -366,6 +366,10 @@ class _PincodeTabState extends State<PincodeTab> {
                     setState(() {
                       loading = false;
                     });
+                  } else {
+                    setState(() {
+                      loading = false;
+                    });
                   }
                 },
                 label: Text("Use my current location",
@@ -661,6 +665,10 @@ class _DistrictsTabState extends State<DistrictsTab> {
 
                     // pincode = placemarks[0].postalCode;
                     // pincodeController.text = placemarks[0].postalCode;
+                    setState(() {
+                      loading = false;
+                    });
+                  } else {
                     setState(() {
                       loading = false;
                     });
