@@ -418,7 +418,9 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
           GestureDetector(
             onTap: !isLoading
                 ? () async {
-                    var radiusValid = _radiusKey.currentState.validate();
+                    var radiusValid = radius == "null"
+                        ? true
+                        : _radiusKey.currentState.validate();
                     var minValid = _formKey.currentState.validate();
                     print(radiusValid);
                     print(minValid);
@@ -434,7 +436,9 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                           dose1: dose1.toString(),
                           dose2: dose2.toString(),
                           isOn: "true",
-                          radius: double.parse(radius).round(),
+                          radius: radius == "null"
+                              ? null
+                              : double.parse(radius).round(),
                           minAvailable: double.parse(minAvailable).round());
                       setState(() {
                         isLoading = true;

@@ -5,7 +5,9 @@ import 'package:vaccine_slot_notifier/models/alarm.dart';
 class EditAlarmBottomSheet extends StatefulWidget {
   final Alarm alarmData;
   final Function getAlarms;
+
   EditAlarmBottomSheet(this.alarmData, this.getAlarms);
+
   @override
   _EditAlarmBottomSheetState createState() => _EditAlarmBottomSheetState();
 }
@@ -315,7 +317,7 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                           color: Colors.red,
                           fontWeight: FontWeight.w500)))
               : Container(),
-          radius == null
+          radius == "null"
               ? Container()
               : Container(
                   margin: EdgeInsets.only(top: 20),
@@ -420,7 +422,9 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
               GestureDetector(
                 onTap: !isLoading
                     ? () async {
-                        var radiusValid = _radiusKey.currentState.validate();
+                        var radiusValid = radius == "null"
+                            ? true
+                            : _radiusKey.currentState.validate();
                         var minValid = _formKey.currentState.validate();
                         if (radiusValid && minValid) {
                           Alarm finalAlarm = Alarm(
@@ -435,7 +439,7 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                               dose1: dose1.toString(),
                               dose2: dose2.toString(),
                               isOn: alarmData.isOn.toString(),
-                              radius: double.parse(radius).round(),
+                              radius: radius == "null" ? null : double.parse(radius).round(),
                               minAvailable: double.parse(minAvailable).round());
                           setState(() {
                             isLoading = true;
