@@ -4,12 +4,13 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
+import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import androidx.work.CoroutineWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
-import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -30,7 +31,8 @@ data class Alarm(
         val covishield: Boolean,
         val dose1: Boolean,
         val dose2: Boolean,
-        val minAvailable: Int
+        val minAvailable: Int,
+        val radius: Int?
 )
 
 class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : CoroutineWorker(appContext, workerParams) {
@@ -39,22 +41,33 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
         var alarmsList: Array<Alarm> = arrayOf();
         var triggerAlarm: Boolean = false
 
-        val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(applicationContext.getDatabasePath("alarms.db").absolutePath, null)
-        db.execSQL("""CREATE TABLE IF NOT EXISTS Alarm(
-                id integer primary key AUTOINCREMENT,
-                pincode TEXT,
-                districtId TEXT,
-                districtName TEXT,
-                isOn TEXT,
-                eighteenPlus TEXT,
-                fortyfivePlus TEXT,
-                covaxin TEXT,
-                covishield TEXT,
-                dose1 TEXT,
-                dose2 TEXT,
-                minAvailable INTEGER
-                )""")
-        val cursor = db.rawQuery("select * from Alarm", null)
+        val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(applicationContext.getDatabasePath("alarms.db").absolutePath, null);
+//        db.execSQL("""CREATE TABLE IF NOT EXISTS Alarm(
+//                id integer primary key AUTOINCREMENT,
+//                pincode TEXT,
+//                districtId TEXT,
+//                districtName TEXT,
+//                isOn TEXT,
+//                eighteenPlus TEXT,
+//                fortyfivePlus TEXT,
+//                covaxin TEXT,
+//                covishield TEXT,
+//                dose1 TEXT,
+//                dose2 TEXT,
+//                minAvailable INTEGER
+//                )""")
+        lateinit var cursor: Cursor;
+        try {
+            cursor = db.rawQuery("select * from Alarm", null)
+            if (db.version == 1) {
+                Log.d("AlarmWorker", "Updating DB")
+                db.execSQL("""ALTER TABLE Alarm ADD radius INTEGER""")
+                db.version = 2
+            }
+        } catch (e: SQLException) {
+            //Log.d("AlarmWorker", "FAILED")
+            return Result.success();
+        }
 
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast) {
@@ -70,7 +83,8 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                         toBool(cursor.getString(8)),
                         toBool(cursor.getString(9)),
                         toBool(cursor.getString(10)),
-                        cursor.getInt(11)
+                        cursor.getInt(11),
+                        cursor.getInt(12)
                 )
                 alarmsList = append(alarmsList, toAddAlarm)
                 cursor.moveToNext()
@@ -80,9 +94,11 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
         cursor.close()
         db.close()
 
+        val httpClient = OkHttpClient()
+
         for (alarm in alarmsList) {
 
-            if(!alarm.isOn){
+            if (!alarm.isOn) {
                 continue
             }
 
@@ -91,26 +107,67 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
             var slotsIn = 0
 
-            val url = if (alarm.pincode != null) {
-                "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${alarm.pincode}&date=$date"
+            var centers: JSONArray;
+
+            if (alarm.pincode != null) {
+                centers = JSONArray()
+                val nearbyRequest = Request.Builder().url("https://smartjab.in/api/p/${alarm.pincode}/${alarm.radius ?: "0"}").build()
+                val nearbyResponse: Response = httpClient.newCall(nearbyRequest).execute()
+                val nearbyJson = JSONObject(nearbyResponse.body()!!.string())
+
+                val districts = nearbyJson.getJSONArray("districts")
+                var pincodes: Array<String> = arrayOf()
+
+                for (i in 0 until nearbyJson.getJSONArray("pincodes").length()) {
+                    pincodes = appendString(pincodes, nearbyJson
+                            .getJSONArray("pincodes")
+                            .getJSONObject(i).getString("pincode"))
+                }
+
+                for(i in 0 until districts.length()){
+                    val district = districts.getJSONObject(i)
+                    //Log.d("AlarmWorker", district.toString())
+                    val url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${district.getInt("id")}&date=$date"
+                    val request = Request.Builder()
+                            .header("Accept-Language", "en_US")
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
+                            .url(url)
+                            .build()
+                    val response: Response = httpClient.newCall(request).execute()
+                    val json = JSONObject(response.body()!!.string())
+
+                    if (json.isNull("centers")) {
+                        continue
+                    }
+                    val dCenters = json.getJSONArray("centers")
+
+                    for(j in 0 until dCenters.length()){
+                        val c = dCenters.getJSONObject(j)
+                        if(pincodes.contains(c.getString("pincode"))){
+                            centers.put(c)
+                        }
+                    }
+                }
+
             } else {
-                "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${alarm.districtId}&date=$date"
+                val url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${alarm.districtId}&date=$date"
+
+                val request = Request.Builder()
+                        .header("Accept-Language", "en_US")
+                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
+                        .url(url)
+                        .build()
+                val response: Response = httpClient.newCall(request).execute()
+                val json = JSONObject(response.body()!!.string())
+
+                if (json.isNull("centers")) {
+                    continue
+                }
+
+                centers = json.getJSONArray("centers")
             }
 
-            val httpClient = OkHttpClient()
-            val request = Request.Builder()
-                    .header("Accept-Language", "en_US")
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
-                    .url(url)
-                    .build()
-            val response: Response = httpClient.newCall(request).execute()
-            val json = JSONObject(response.body()!!.string())
-
-            if (json.isNull("centers")) {
-                continue
-            }
-
-            val centers = json.getJSONArray("centers")
+            //val centers = json.getJSONArray("centers")
 
             val slots = JSONObject()
 
@@ -162,25 +219,25 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                             session.getInt("available_capacity_dose2") == 0 &&
                             session.getInt("available_capacity") > 0
 
-                    if(dose1 && !dose2 && !skipDoseFilter){
+                    if (dose1 && !dose2 && !skipDoseFilter) {
                         if (slots.isNull(session.getString("date"))) {
                             slots.put(session.getString("date"), session.getInt("available_capacity_dose1"))
                         } else {
                             slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose1"))
                         }
-                        if(session.getInt("available_capacity_dose1") > alarm.minAvailable){
+                        if (session.getInt("available_capacity_dose1") > alarm.minAvailable) {
                             areSlots = true
                         }
                         continue
                     }
 
-                    if(dose2 && !dose1 && !skipDoseFilter){
+                    if (dose2 && !dose1 && !skipDoseFilter) {
                         if (slots.isNull(session.getString("date"))) {
                             slots.put(session.getString("date"), session.getInt("available_capacity_dose2"))
                         } else {
                             slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose2"))
                         }
-                        if(session.getInt("available_capacity_dose2") > alarm.minAvailable){
+                        if (session.getInt("available_capacity_dose2") > alarm.minAvailable) {
                             areSlots = true
                         }
                         continue
@@ -192,12 +249,12 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                         slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity"))
                     }
 
-                    if(session.getInt("available_capacity") > alarm.minAvailable){
+                    if (session.getInt("available_capacity") > alarm.minAvailable) {
                         areSlots = true
                     }
                 }
 
-                if(areSlots){
+                if (areSlots) {
                     slotsIn += 1
                 }
             }
@@ -205,19 +262,18 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
             var isNoSlots: Boolean = true
             var slotsOpen = 0
 
+
             slots.keys().forEach {
-                if(slots.getInt(it) > alarm.minAvailable){
+                if (slots.getInt(it) > alarm.minAvailable) {
                     isNoSlots = false
                     slotsOpen += slots.getInt(it)
                 }
             }
 
-            Log.d("AlarmWorker", isNoSlots.toString())
-
-            if(!isNoSlots){
+            if (!isNoSlots) {
                 triggerAlarm = true
                 val sharedPrefs = applicationContext.getSharedPreferences(applicationContext.getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
-                with(sharedPrefs.edit()){
+                with(sharedPrefs.edit()) {
                     val place = alarm.pincode ?: alarm.districtName
                     putString("place", place)
                     putInt("slotsIn", slotsIn)
@@ -228,7 +284,7 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
             }
         }
 
-        if(triggerAlarm){
+        if (triggerAlarm) {
             triggerAlarm()
         }
 
@@ -241,6 +297,12 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
     private fun append(arr: Array<Alarm>, element: Alarm): Array<Alarm> {
         val list: MutableList<Alarm> = arr.toMutableList()
+        list.add(element)
+        return list.toTypedArray()
+    }
+
+    private fun appendString(arr: Array<String>, element: String): Array<String> {
+        val list: MutableList<String> = arr.toMutableList()
         list.add(element)
         return list.toTypedArray()
     }

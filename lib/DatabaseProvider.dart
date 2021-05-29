@@ -16,7 +16,7 @@ class DatabaseProvider {
 
   Future<Database> getDatabaseInstance() async {
     return await openDatabase(join(await getDatabasesPath(), "alarms.db"),
-        version: 1, onCreate: (Database db, int version) async {
+        version: 2, onCreate: (Database db, int version) async {
       await db.execute("CREATE TABLE IF NOT EXISTS Alarm("
           "id integer primary key AUTOINCREMENT,"
           "pincode TEXT,"
@@ -29,8 +29,11 @@ class DatabaseProvider {
           "covishield TEXT,"
           "dose1 TEXT,"
           "dose2 TEXT,"
-          "minAvailable INTEGER"
+          "minAvailable INTEGER,"
+          "radius INTEGER"
           ")");
+    }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
+      await db.execute("ALTER TABLE Alarm ADD radius INTEGER");
     });
   }
 

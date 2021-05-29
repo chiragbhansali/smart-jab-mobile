@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import "package:http/http.dart" as http;
+import 'package:page_transition/page_transition.dart';
 import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
@@ -23,101 +25,108 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 60,
-        backgroundColor: Color(0xffF5F7FA),
-        elevation: 0,
-        centerTitle: true,
-        title: Text("Smart Jab",
-            style: TextStyle(
-                color: Color(0xff323F4B),
-                fontWeight: FontWeight.w500,
-                fontSize: 18)),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-                child: Text(
-                  "Check available vaccination slots • Get notified instantly through an alarm",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width - 54,
-                height: 50,
-                child: CupertinoSlidingSegmentedControl(
-                  backgroundColor: Color(0xffE3EFFF),
-                  thumbColor: Color(0xff0A6CFF),
-                  children: {
-                    0: Container(
-                      height: 44,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Pincode",
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: tabIndex == 0
-                                    ? Color(0xffffffff)
-                                    : Color(0xff0A6CFF),
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                    1: Container(
-                      height: 44,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "District",
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: tabIndex == 1
-                                    ? Color(0xffffffff)
-                                    : Color(0xff0A6CFF),
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    )
-                  },
-                  onValueChanged: (i) {
-                    setState(() {
-                      tabIndex = i;
-                    });
-                    _pageController.animateToPage(i,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.bounceInOut);
-                  },
-                  groupValue: tabIndex,
-                ),
-              ),
-              Container(
-                  height: MediaQuery.of(context).size.height - 300,
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (i) {
-                      setState(() {
-                        tabIndex = i;
-                      });
-                    },
-                    children: [PincodeTab(), DistrictsTab()],
-                  ))
-            ],
-          ),
+        appBar: AppBar(
+          toolbarHeight: 60,
+          backgroundColor: Color(0xffF5F7FA),
+          elevation: 0,
+          centerTitle: true,
+          title: Text("Smart Jab",
+              style: TextStyle(
+                  color: Color(0xff323F4B),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18)),
         ),
-      ),
-    );
+        body: LayoutBuilder(builder: (context, constraints) {
+          return Container(
+            color: Colors.white,
+            width: MediaQuery.of(context).size.width,
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                    minWidth: constraints.maxWidth,
+                    minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+
+                      //mainAxisSize: MainAxisSize.min,
+                      //mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 30),
+                        MediaQuery.of(context).size.height > 600
+                            ? Expanded(child: Container())
+                            : Container(),
+                        Container(
+                          width: MediaQuery.of(context).size.width - 54,
+                          height: 50,
+                          child: CupertinoSlidingSegmentedControl(
+                            backgroundColor: Color(0xffE3EFFF),
+                            thumbColor: Color(0xff0A6CFF),
+                            children: {
+                              0: Container(
+                                height: 44,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Pincode",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: tabIndex == 0
+                                              ? Color(0xffffffff)
+                                              : Color(0xff0A6CFF),
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              1: Container(
+                                height: 44,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "District",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: tabIndex == 1
+                                              ? Color(0xffffffff)
+                                              : Color(0xff0A6CFF),
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            },
+                            onValueChanged: (i) {
+                              setState(() {
+                                tabIndex = i;
+                              });
+                              _pageController.animateToPage(i,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.bounceInOut);
+                            },
+                            groupValue: tabIndex,
+                          ),
+                        ),
+                        Container(
+                            height: MediaQuery.of(context).size.height - 300,
+                            child: PageView(
+                              controller: _pageController,
+                              onPageChanged: (i) {
+                                setState(() {
+                                  tabIndex = i;
+                                });
+                              },
+                              children: [PincodeTab(), DistrictsTab()],
+                            )),
+                        Expanded(child: Container()),
+                      ]),
+                ),
+              ),
+            ),
+          );
+        }));
   }
 }
 
@@ -131,9 +140,9 @@ class _PincodeTabState extends State<PincodeTab> {
   FocusNode _focusPincode = new FocusNode();
   FocusNode _focusRadius = new FocusNode();
   var pincode;
-  var radius;
+  var radius = '5';
   var pincodeController = TextEditingController();
-  var radiusController = TextEditingController(text: "1");
+  var radiusController = TextEditingController(text: "5");
   var loading = false;
 
   final storage = LocalStorage();
@@ -206,12 +215,12 @@ class _PincodeTabState extends State<PincodeTab> {
   void getSavedPincode() async {
     String storedPincode = await storage.getItem("pincode");
     String storedRadius = await storage.getItem("radius");
-    print(storedPincode);
+    print(storedRadius);
     if (storedPincode != null && storedRadius != null) {
       pincodeController.text = storedPincode;
       pincode = storedPincode;
       radiusController.text = storedRadius;
-      radius = radius;
+      radius = storedRadius;
       setState(() {
         // pincode = storedPincode;
       });
@@ -357,6 +366,10 @@ class _PincodeTabState extends State<PincodeTab> {
                     setState(() {
                       loading = false;
                     });
+                  } else {
+                    setState(() {
+                      loading = false;
+                    });
                   }
                 },
                 label: Text("Use my current location",
@@ -393,6 +406,7 @@ class _PincodeTabState extends State<PincodeTab> {
                     PageTransition(
                         child: AvailableDaysSlots(
                           pincode: pincode,
+                          radius: radius,
                         ),
                         type: PageTransitionType.bottomToTop,
                         duration: Duration(milliseconds: 250),
@@ -633,8 +647,28 @@ class _DistrictsTabState extends State<DistrictsTab> {
                   if (position != null) {
                     List<Placemark> placemarks = await placemarkFromCoordinates(
                         position.latitude, position.longitude);
+
+                    var res = await http.get(Uri.parse(
+                        "https://smartjab.in/api/p/${placemarks[0].postalCode}/0"));
+
+                    var body = jsonDecode(res.body);
+                    print(body['districts']);
+
+                    var storedStateId = body['districts'][0]['state_id'];
+                    var storedDistrictId = body['districts'][0]['id'];
+
+                    fillDistrictsMap(storedStateId);
+                    _chosenStateId = storedStateId;
+                    _chosenDistrictId = storedDistrictId;
+                    districtName = districts[storedDistrictId];
+                    setState(() {});
+
                     // pincode = placemarks[0].postalCode;
                     // pincodeController.text = placemarks[0].postalCode;
+                    setState(() {
+                      loading = false;
+                    });
+                  } else {
                     setState(() {
                       loading = false;
                     });

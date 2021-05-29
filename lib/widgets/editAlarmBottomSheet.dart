@@ -13,6 +13,7 @@ class EditAlarmBottomSheet extends StatefulWidget {
 class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
   Alarm alarmData;
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _radiusKey = GlobalKey<FormState>();
 
   bool eighteenPlus;
   bool fortyfivePlus;
@@ -22,9 +23,11 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
   bool dose2;
 
   String minAvailable;
+  String radius;
 
   bool isError = false;
   bool isLoading = false;
+  bool radiusError = false;
 
   bool toBool(String v) {
     if (v.toLowerCase() == "true") {
@@ -45,6 +48,7 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
     dose1 = toBool(widget.alarmData.dose1);
     dose2 = toBool(widget.alarmData.dose2);
     minAvailable = widget.alarmData.minAvailable.toString();
+    radius = widget.alarmData.radius.toString();
   }
 
   @override
@@ -254,6 +258,19 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                             onChanged: (value) {
                               minAvailable = value;
                             },
+                            validator: (value) {
+                              if (value.isEmpty || int.parse(value) <= 0) {
+                                setState(() {
+                                  isError = true;
+                                });
+                                return "";
+                              } else {
+                                setState(() {
+                                  isError = false;
+                                });
+                                return null;
+                              }
+                            },
                             style: TextStyle(
                                 fontSize: 18,
                                 color: Color(0xff323F4B),
@@ -298,19 +315,114 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                           color: Colors.red,
                           fontWeight: FontWeight.w500)))
               : Container(),
+          radius == null
+              ? Container()
+              : Container(
+                  margin: EdgeInsets.only(top: 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: (MediaQuery.of(context).size.width / 6) * 2.5,
+                        child: Text(
+                          "Check PIN codes in",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 17,
+                              color: Color(0xff3E4C59)),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(left: 4, right: 4),
+                        child: Form(
+                          key: _radiusKey,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width / 6,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: TextFormField(
+                                  textAlign: TextAlign.center,
+                                  initialValue: radius.toString(),
+                                  onChanged: (value) {
+                                    radius = value;
+                                  },
+                                  validator: (value) {
+                                    if (value.isEmpty) {
+                                      setState(() {
+                                        radiusError = true;
+                                      });
+                                      return "";
+                                    } else if (int.parse(value) > 40) {
+                                      setState(() {
+                                        radiusError = true;
+                                      });
+                                      return "";
+                                    } else if (int.parse(value) < 0) {
+                                      setState(() {
+                                        radiusError = true;
+                                      });
+                                      return "";
+                                    } else {
+                                      setState(() {
+                                        radiusError = false;
+                                      });
+                                      return null;
+                                    }
+                                  },
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Color(0xff323F4B),
+                                      fontWeight: FontWeight.w500),
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    errorStyle: TextStyle(fontSize: 16),
+                                    isDense: true,
+                                    contentPadding:
+                                        EdgeInsets.symmetric(vertical: 20),
+                                    //labelText: "Enter your PIN Code",
+                                    fillColor:
+                                        Color(0xff212121).withOpacity(0.08),
+                                    filled: true,
+                                    border: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    errorBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
+                                  )),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text("km radius",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 17,
+                                color: Color(0xff3E4C59))),
+                      )
+                    ],
+                  ),
+                ),
+          radiusError
+              ? Container(
+                  width: MediaQuery.of(context).size.width,
+                  margin: EdgeInsets.only(top: 5),
+                  child: Text(
+                      "Radius must be greater than 0 and smaller than 40",
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red,
+                          fontWeight: FontWeight.w500)))
+              : Container(),
           Row(
             children: [
               GestureDetector(
                 onTap: !isLoading
                     ? () async {
-                        if (minAvailable.isEmpty || minAvailable == "0") {
-                          setState(() {
-                            isError = true;
-                          });
-                        } else {
-                          setState(() {
-                            isError = false;
-                          });
+                        var radiusValid = _radiusKey.currentState.validate();
+                        var minValid = _formKey.currentState.validate();
+                        if (radiusValid && minValid) {
                           Alarm finalAlarm = Alarm(
                               id: alarmData.id,
                               pincode: alarmData.pincode,
@@ -323,6 +435,7 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                               dose1: dose1.toString(),
                               dose2: dose2.toString(),
                               isOn: alarmData.isOn.toString(),
+                              radius: double.parse(radius).round(),
                               minAvailable: double.parse(minAvailable).round());
                           setState(() {
                             isLoading = true;
@@ -443,3 +556,6 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
     );
   }
 }
+
+//Hello This is a comment.
+// And this is another cool comment

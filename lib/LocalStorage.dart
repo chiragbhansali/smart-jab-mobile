@@ -15,7 +15,6 @@ class LocalStorage {
     String dataString = await file.readAsString();
     var storage = jsonDecode(dataString);
     storage[key] = data;
-    print(storage);
     await file.writeAsString(jsonEncode(storage));
     return data;
   }
