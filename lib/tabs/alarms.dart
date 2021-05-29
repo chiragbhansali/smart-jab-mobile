@@ -150,7 +150,7 @@ class _AlarmCardState extends State<AlarmCard> {
       child: Container(
         //height: 170,
         width: MediaQuery.of(context).size.width - 54,
-        padding: EdgeInsets.only(left: 15, top: 20, bottom: 20, right: 15),
+        padding: EdgeInsets.only(left: 15, top: 20, bottom: 40, right: 15),
         margin: EdgeInsets.only(left: 22, right: 22, top: 10, bottom: 10),
         decoration: BoxDecoration(
             color: Color(0xffF5F7FA),
@@ -162,30 +162,68 @@ class _AlarmCardState extends State<AlarmCard> {
                   spreadRadius: 0,
                   offset: Offset(0, 2))
             ]),
-        child: Row(
+        child:Column(
           children: [
-            Container(
-              constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width - 158),
-              child: Text(
-                alarm.pincode ?? alarm.districtName,
-                style: TextStyle(
-                    fontSize: 18,
-                    color: Color(0xff323F4B),
-                    fontWeight: FontWeight.w600),
-              ),
+            Row(
+              children: [
+                Container(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 158),
+                  child: Text(
+                    alarm.pincode ?? alarm.districtName,
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: Color(0xff323F4B),
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Expanded(child: Container()),
+                Switch(
+                    value: toBool(alarm.isOn),
+                    onChanged: (v) async {
+                      await DatabaseProvider.db.editAlarmOnState(alarm.id, v);
+                      setState(() {
+                        alarm.isOn = v.toString();
+                      });
+                    }),
+              ],
             ),
-            Expanded(child: Container()),
-            Switch(
-                value: toBool(alarm.isOn),
-                onChanged: (v) async {
-                  await DatabaseProvider.db.editAlarmOnState(alarm.id, v);
-                  setState(() {
-                    alarm.isOn = v.toString();
-                  });
-                })
+            SizedBox(height: 31, width: MediaQuery.of(context).size.width,),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    const platform = const MethodChannel(
+                      'com.arnav.smartjab/flutter',
+                    );
+                    var result =
+                         await platform.invokeMethod("chooseRingtone");
+                  },
+                    child: Container(
+                    constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width - 158),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.notifications_active_outlined,
+                            color: Color.fromRGBO(62, 76, 89, 1),
+                            size: 24,
+                          ),
+                          SizedBox(width: 12),
+                          Text("Default(Oxygen)",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color.fromRGBO(62, 76, 89, 1),
+                                fontWeight: FontWeight.w500,
+                              )),
+                        ],
+                      ),
+                    )
+                ),
+              ],
+            ),
           ],
-        ),
+        )
       ),
     );
   }

@@ -1,22 +1,14 @@
 package com.example.vaccine_slot_notifier
 
-import android.app.*
-import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import java.util.concurrent.TimeUnit
 
 
@@ -24,6 +16,7 @@ class MainActivity : FlutterActivity() {
 
     private var ALARM_CHECK_WORKER = "ALARM_CHECK_WORKER"
     private val CHANNEL = "com.arnav.smartjab/flutter"
+    private val RINGTONE = 1
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -34,9 +27,12 @@ class MainActivity : FlutterActivity() {
                 startActivity(mapIntent)
                 result.success("")
             }
-//            if (call.method = ""){
-//
-//            }
+            // Ringtone Picker Method
+            if (call.method == "chooseRingtone"){
+                // Choosre Ringtone Picker intent
+                val chooseIntent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                startActivityForResult(chooseIntent, RINGTONE)
+            }
             else {
                 result.notImplemented()
             }
@@ -76,5 +72,14 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // Get Uri from picker
+        if (requestCode == RINGTONE) {
+            // Returns Uri
+            val ringtone = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            // TODO: Update DB 
+//            Log.d("ringtone path", ringtone.toString())
+        }
+    }
 }
