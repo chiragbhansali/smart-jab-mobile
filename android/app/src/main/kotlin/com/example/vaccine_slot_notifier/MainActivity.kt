@@ -49,30 +49,30 @@ class MainActivity : FlutterActivity() {
 
         if (fromAlarm != "TRUE") {
 
-            var wm: WorkManager = WorkManager.getInstance(applicationContext)
+            val wm: WorkManager = WorkManager.getInstance(applicationContext)
             wm.cancelAllWork()
 
-            var constraints: Constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+            val constraints: Constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
-            var periodicAlarmCheckWorker1: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+            val periodicAlarmCheckWorker1: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
                     .addTag(ALARM_CHECK_WORKER + "_1").setConstraints(constraints)
                     .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
 //                    .setInitialDelay(0, TimeUnit.MINUTES)
                     .build()
-            var periodicAlarmCheckWorker2: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+            val periodicAlarmCheckWorker2: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
                     .addTag(ALARM_CHECK_WORKER + "_2").setConstraints(constraints)
                     .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                     .setInitialDelay(5, TimeUnit.MINUTES)
                     .build()
-            var periodicAlarmCheckWorker3: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
+            val periodicAlarmCheckWorker3: PeriodicWorkRequest = PeriodicWorkRequest.Builder(AlarmWorker::class.java, 15, TimeUnit.MINUTES)
                     .addTag(ALARM_CHECK_WORKER + "_3").setConstraints(constraints)
                     .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                     .setInitialDelay(10, TimeUnit.MINUTES)
                     .build()
 
-            wm.enqueueUniquePeriodicWork("ALARM_CHECKER_1", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker1)
-            wm.enqueueUniquePeriodicWork("ALARM_CHECKER_2", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker2)
-            wm.enqueueUniquePeriodicWork("ALARM_CHECKER_3", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker3)
+            wm.enqueueUniquePeriodicWork("ALARM_CHECKER_1", ExistingPeriodicWorkPolicy.REPLACE, periodicAlarmCheckWorker1)
+            wm.enqueueUniquePeriodicWork("ALARM_CHECKER_2", ExistingPeriodicWorkPolicy.REPLACE, periodicAlarmCheckWorker2)
+            wm.enqueueUniquePeriodicWork("ALARM_CHECKER_3", ExistingPeriodicWorkPolicy.REPLACE, periodicAlarmCheckWorker3)
         }
     }
 

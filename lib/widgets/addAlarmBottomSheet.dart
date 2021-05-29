@@ -315,7 +315,7 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                           color: Colors.red,
                           fontWeight: FontWeight.w500)))
               : Container(),
-          radius == null
+          radius == "null"
               ? Container()
               : Container(
                   margin: EdgeInsets.only(top: 20),

@@ -38,9 +38,9 @@ class BootReceiver : BroadcastReceiver() {
                             .setInitialDelay(10, TimeUnit.MINUTES)
                             .build()
 
-                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_1", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker1)
-                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_2", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker2)
-                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_3", ExistingPeriodicWorkPolicy.KEEP, periodicAlarmCheckWorker3)
+                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_1", ExistingPeriodicWorkPolicy.REPLACE, periodicAlarmCheckWorker1)
+                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_2", ExistingPeriodicWorkPolicy.REPLACE, periodicAlarmCheckWorker2)
+                    wm.enqueueUniquePeriodicWork("ALARM_CHECKER_3", ExistingPeriodicWorkPolicy.REPLACE, periodicAlarmCheckWorker3)
                 }
             }
         }
