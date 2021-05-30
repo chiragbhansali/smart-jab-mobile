@@ -444,7 +444,6 @@ class _CenterCardState extends State<CenterCard> {
                         children: [
                           ListTile(
                             onTap: () async {
-                              print(widget.center);
                               const platform = const MethodChannel(
                                 'com.arnav.smartjab/flutter',
                               );
@@ -470,11 +469,12 @@ class _CenterCardState extends State<CenterCard> {
                           ),
                           ListTile(
                             onTap: () async {
-                              var _url =
-                                  "https://selfregistration.cowin.gov.in/";
-                              await canLaunch(_url)
-                                  ? await launch(_url)
-                                  : throw 'Could not launch $_url';
+                              const platform = const MethodChannel(
+                                'com.arnav.smartjab/flutter',
+                              );
+                              try{
+                                await platform.invokeMethod("openCowin");
+                              }catch(e){}
                             },
                             leading: Icon(Icons.open_in_new,
                                 color: Color(0xff616E7C), size: 28),

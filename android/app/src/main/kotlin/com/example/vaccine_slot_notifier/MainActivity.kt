@@ -21,20 +21,29 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            if (call.method == "openMaps") {
-                val url = Uri.parse("geo:${call.argument<Int>("lat")},${call.argument<Int>("long")}?q=${call.argument<String>("address")}")
-                val mapIntent = Intent(Intent.ACTION_VIEW, url)
-                startActivity(mapIntent)
-                result.success("")
-            }
-            // Ringtone Picker Method
-            if (call.method == "chooseRingtone"){
-                // Choosre Ringtone Picker intent
-                val chooseIntent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                startActivityForResult(chooseIntent, RINGTONE)
-            }
-            else {
-                result.notImplemented()
+            when (call.method) {
+                "openMaps" -> {
+                    val url = Uri.parse("geo:${call.argument<Int>("lat")},${call.argument<Int>("long")}?q=${call.argument<String>("address")}")
+                    val mapIntent = Intent(Intent.ACTION_VIEW, url)
+                    startActivity(mapIntent)
+                    result.success("")
+                }
+                // Ringtone Picker Method
+                "chooseRingtone" -> {
+                    // Choose Ringtone Picker intent
+                    val chooseIntent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                    startActivityForResult(chooseIntent, RINGTONE)
+                    result.success("")
+                }
+                "openCowin" -> {
+                    val url = Uri.parse("https://selfregistration.cowin.gov.in/")
+                    val cowinIntent = Intent(Intent.ACTION_VIEW, url)
+                    startActivity(cowinIntent)
+                    result.success("")
+                }
+                else -> {
+                    result.notImplemented()
+                }
             }
         }
     }
@@ -78,6 +87,8 @@ class MainActivity : FlutterActivity() {
         if (requestCode == RINGTONE) {
             // Returns Uri
             val ringtone = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            val ringtoneName = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            Log.d("MainActivity", ringtone.toString());
             // TODO: Update DB 
 //            Log.d("ringtone path", ringtone.toString())
         }
