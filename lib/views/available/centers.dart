@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class CentersAvailableSlots extends StatefulWidget {
   final String selectedDate;
@@ -472,9 +471,9 @@ class _CenterCardState extends State<CenterCard> {
                               const platform = const MethodChannel(
                                 'com.arnav.smartjab/flutter',
                               );
-                              try{
+                              try {
                                 await platform.invokeMethod("openCowin");
-                              }catch(e){}
+                              } catch (e) {}
                             },
                             leading: Icon(Icons.open_in_new,
                                 color: Color(0xff616E7C), size: 28),
