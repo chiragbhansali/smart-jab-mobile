@@ -121,7 +121,7 @@ class AlarmCard extends StatefulWidget {
 class _AlarmCardState extends State<AlarmCard> {
   Alarm alarm;
   var ringtoneName = "";
-
+  bool isVibrateChecked = false;
   bool toBool(String v) {
     return v == "true";
   }
@@ -172,7 +172,7 @@ class _AlarmCardState extends State<AlarmCard> {
       child: Container(
           //height: 170,
           width: MediaQuery.of(context).size.width - 54,
-          padding: EdgeInsets.only(left: 15, top: 20, bottom: 40, right: 15),
+          padding: EdgeInsets.only(left: 15, top: 20, bottom: 20, right: 15),
           margin: EdgeInsets.only(left: 22, right: 22, top: 10, bottom: 10),
           decoration: BoxDecoration(
               color: Color(0xffF5F7FA),
@@ -210,10 +210,7 @@ class _AlarmCardState extends State<AlarmCard> {
                       }),
                 ],
               ),
-              SizedBox(
-                height: 31,
-                width: MediaQuery.of(context).size.width,
-              ),
+              SizedBox(height: 20, width: MediaQuery.of(context).size.width),
               Row(
                 children: [
                   GestureDetector(
@@ -225,8 +222,6 @@ class _AlarmCardState extends State<AlarmCard> {
                             await platform.invokeMethod("chooseRingtone");
                       },
                       child: Container(
-                        constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width - 158),
                         child: Row(
                           children: [
                             Icon(
@@ -237,13 +232,46 @@ class _AlarmCardState extends State<AlarmCard> {
                             SizedBox(width: 12),
                             Text(ringtoneName,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Color.fromRGBO(62, 76, 89, 1),
                                   fontWeight: FontWeight.w500,
                                 )),
                           ],
                         ),
                       )),
+                  Expanded(child: Container(), flex: 1),
+                  Checkbox(
+                    value: toBool(alarm.vibrate),
+                    onChanged: (v) async {
+                      await DatabaseProvider.db
+                          .editAlarmVibrateState(alarm.id, v);
+                      setState(() {
+                        alarm.vibrate = v.toString();
+                      });
+                    },
+                  ),
+                  Expanded(child: Container(), flex: 0),
+                  GestureDetector(
+                    onTap: () async {
+                      bool state = !toBool(alarm.vibrate);
+                      await DatabaseProvider.db.editAlarmVibrateState(
+                          alarm.id, !toBool(alarm.vibrate));
+                      setState(() {
+                        alarm.vibrate = state.toString();
+                      });
+                    },
+                    child: Text(
+                      "Vibrate",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xff3E4C59),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  )
                 ],
               ),
             ],

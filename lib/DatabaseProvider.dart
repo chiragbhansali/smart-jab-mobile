@@ -76,6 +76,14 @@ class DatabaseProvider {
     return true;
   }
 
+  Future<bool> editAlarmVibrateState(int id, bool state) async {
+    final db = await database;
+    var res = await db.update("Alarm", {"vibrate": state.toString()},
+        where: "id = ?", whereArgs: [id]);
+
+    return true;
+  }
+
   Future<bool> deleteAlarm(int id) async {
     final db = await database;
     var res = await db.delete("Alarm", where: "id = ?", whereArgs: [id]);
