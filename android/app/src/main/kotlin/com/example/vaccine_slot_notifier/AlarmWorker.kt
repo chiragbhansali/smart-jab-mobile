@@ -20,28 +20,35 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 data class Alarm(
-        val id: Int,
-        val pincode: String?,
-        val districtId: String?,
-        val districtName: String?,
-        val isOn: Boolean,
-        val eighteenPlus: Boolean,
-        val fortyfivePlus: Boolean,
-        val covaxin: Boolean,
-        val covishield: Boolean,
-        val dose1: Boolean,
-        val dose2: Boolean,
-        val minAvailable: Int,
-        val radius: Int?
+    val id: Int,
+    val pincode: String?,
+    val districtId: String?,
+    val districtName: String?,
+    val isOn: Boolean,
+    val eighteenPlus: Boolean,
+    val fortyfivePlus: Boolean,
+    val covaxin: Boolean,
+    val covishield: Boolean,
+    val dose1: Boolean,
+    val dose2: Boolean,
+    val minAvailable: Int,
+    val radius: Int?,
+    val ringtoneUri: String,
+    val ringtoneName: String,
+    val vibrate: Boolean
 )
 
-class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : CoroutineWorker(appContext, workerParams) {
+class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
+    CoroutineWorker(appContext, workerParams) {
     override suspend fun doWork(): Result {
 
         var alarmsList: Array<Alarm> = arrayOf();
         var triggerAlarm: Boolean = false
 
-        val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(applicationContext.getDatabasePath("alarms.db").absolutePath, null);
+        val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(
+            applicationContext.getDatabasePath("alarms.db").absolutePath,
+            null
+        );
 //        db.execSQL("""CREATE TABLE IF NOT EXISTS Alarm(
 //                id integer primary key AUTOINCREMENT,
 //                pincode TEXT,
@@ -63,6 +70,11 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                 Log.d("AlarmWorker", "Updating DB")
                 db.execSQL("""ALTER TABLE Alarm ADD radius INTEGER""")
                 db.version = 2
+            } else if (db.version == 2) {
+                db.execSQL("""ALTER TABLE Alarm ADD ringtoneUri TEXT DEFAULT 'default'""")
+                db.execSQL("""ALTER TABLE Alarm ADD ringtoneName TEXT DEFAULT 'default'""")
+                db.execSQL("""ALTER TABLE Alarm ADD vibrate TEXT DEFAULT 'true'""")
+                db.version = 3;
             }
         } catch (e: SQLException) {
             //Log.d("AlarmWorker", "FAILED")
@@ -72,19 +84,22 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast) {
                 val toAddAlarm: Alarm = Alarm(
-                        cursor.getInt(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        toBool(cursor.getString(4)),
-                        toBool(cursor.getString(5)),
-                        toBool(cursor.getString(6)),
-                        toBool(cursor.getString(7)),
-                        toBool(cursor.getString(8)),
-                        toBool(cursor.getString(9)),
-                        toBool(cursor.getString(10)),
-                        cursor.getInt(11),
-                        cursor.getInt(12)
+                    cursor.getInt(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    toBool(cursor.getString(4)),
+                    toBool(cursor.getString(5)),
+                    toBool(cursor.getString(6)),
+                    toBool(cursor.getString(7)),
+                    toBool(cursor.getString(8)),
+                    toBool(cursor.getString(9)),
+                    toBool(cursor.getString(10)),
+                    cursor.getInt(11),
+                    cursor.getInt(12),
+                    cursor.getString(13),
+                    cursor.getString(14),
+                    toBool(cursor.getString(15))
                 )
                 alarmsList = append(alarmsList, toAddAlarm)
                 cursor.moveToNext()
@@ -111,7 +126,9 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
             if (alarm.pincode != null) {
                 centers = JSONArray()
-                val nearbyRequest = Request.Builder().url("https://smartjab.in/api/p/${alarm.pincode}/${alarm.radius ?: "0"}").build()
+                val nearbyRequest = Request.Builder()
+                    .url("https://smartjab.in/api/p/${alarm.pincode}/${alarm.radius ?: "0"}")
+                    .build()
                 val nearbyResponse: Response = httpClient.newCall(nearbyRequest).execute()
                 val nearbyJson = JSONObject(nearbyResponse.body()!!.string())
 
@@ -119,20 +136,28 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                 var pincodes: Array<String> = arrayOf()
 
                 for (i in 0 until nearbyJson.getJSONArray("pincodes").length()) {
-                    pincodes = appendString(pincodes, nearbyJson
+                    pincodes = appendString(
+                        pincodes, nearbyJson
                             .getJSONArray("pincodes")
-                            .getJSONObject(i).getString("pincode"))
+                            .getJSONObject(i).getString("pincode")
+                    )
                 }
 
-                for(i in 0 until districts.length()){
+                for (i in 0 until districts.length()) {
                     val district = districts.getJSONObject(i)
                     //Log.d("AlarmWorker", district.toString())
-                    val url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${district.getInt("id")}&date=$date"
+                    val url =
+                        "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${
+                            district.getInt("id")
+                        }&date=$date"
                     val request = Request.Builder()
-                            .header("Accept-Language", "en_US")
-                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
-                            .url(url)
-                            .build()
+                        .header("Accept-Language", "en_US")
+                        .header(
+                            "User-Agent",
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51"
+                        )
+                        .url(url)
+                        .build()
                     val response: Response = httpClient.newCall(request).execute()
                     val json = JSONObject(response.body()!!.string())
 
@@ -141,22 +166,26 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                     }
                     val dCenters = json.getJSONArray("centers")
 
-                    for(j in 0 until dCenters.length()){
+                    for (j in 0 until dCenters.length()) {
                         val c = dCenters.getJSONObject(j)
-                        if(pincodes.contains(c.getString("pincode"))){
+                        if (pincodes.contains(c.getString("pincode"))) {
                             centers.put(c)
                         }
                     }
                 }
 
             } else {
-                val url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${alarm.districtId}&date=$date"
+                val url =
+                    "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=${alarm.districtId}&date=$date"
 
                 val request = Request.Builder()
-                        .header("Accept-Language", "en_US")
-                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51")
-                        .url(url)
-                        .build()
+                    .header("Accept-Language", "en_US")
+                    .header(
+                        "User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.51"
+                    )
+                    .url(url)
+                    .build()
                 val response: Response = httpClient.newCall(request).execute()
                 val json = JSONObject(response.body()!!.string())
 
@@ -221,9 +250,15 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
                     if (dose1 && !dose2 && !skipDoseFilter) {
                         if (slots.isNull(session.getString("date"))) {
-                            slots.put(session.getString("date"), session.getInt("available_capacity_dose1"))
+                            slots.put(
+                                session.getString("date"),
+                                session.getInt("available_capacity_dose1")
+                            )
                         } else {
-                            slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose1"))
+                            slots.put(
+                                session.getString("date"),
+                                slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose1")
+                            )
                         }
                         if (session.getInt("available_capacity_dose1") > alarm.minAvailable) {
                             areSlots = true
@@ -233,9 +268,15 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
                     if (dose2 && !dose1 && !skipDoseFilter) {
                         if (slots.isNull(session.getString("date"))) {
-                            slots.put(session.getString("date"), session.getInt("available_capacity_dose2"))
+                            slots.put(
+                                session.getString("date"),
+                                session.getInt("available_capacity_dose2")
+                            )
                         } else {
-                            slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose2"))
+                            slots.put(
+                                session.getString("date"),
+                                slots.getInt(session.getString("date")) + session.getInt("available_capacity_dose2")
+                            )
                         }
                         if (session.getInt("available_capacity_dose2") > alarm.minAvailable) {
                             areSlots = true
@@ -246,7 +287,10 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
                     if (slots.isNull(session.getString("date"))) {
                         slots.put(session.getString("date"), session.getInt("available_capacity"))
                     } else {
-                        slots.put(session.getString("date"), slots.getInt(session.getString("date")) + session.getInt("available_capacity"))
+                        slots.put(
+                            session.getString("date"),
+                            slots.getInt(session.getString("date")) + session.getInt("available_capacity")
+                        )
                     }
 
                     if (session.getInt("available_capacity") > alarm.minAvailable) {
@@ -272,7 +316,10 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
 
             if (!isNoSlots) {
                 triggerAlarm = true
-                val sharedPrefs = applicationContext.getSharedPreferences(applicationContext.getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
+                val sharedPrefs = applicationContext.getSharedPreferences(
+                    applicationContext.getString(R.string.shared_prefs_key),
+                    Context.MODE_PRIVATE
+                )
                 with(sharedPrefs.edit()) {
                     val place = alarm.pincode ?: alarm.districtName
                     putString("place", place)
@@ -308,7 +355,8 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) : Corouti
     }
 
     private fun triggerAlarm() {
-        val am: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val am: AlarmManager =
+            applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val i: Intent = Intent(applicationContext, AlarmReceiver::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getBroadcast(applicationContext, 0, i, 0)

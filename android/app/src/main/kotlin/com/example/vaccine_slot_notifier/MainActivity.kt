@@ -35,6 +35,12 @@ class MainActivity : FlutterActivity() {
                     startActivityForResult(chooseIntent, RINGTONE)
                     result.success("")
                 }
+                "getDefaultRingtoneName" -> {
+                    val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+                    val ringtone = RingtoneManager.getRingtone(this, defaultRingtoneUri)
+                    val ringtoneName = ringtone.getTitle(this)
+                    result.success(ringtoneName)
+                }
                 "openCowin" -> {
                     val url = Uri.parse("https://selfregistration.cowin.gov.in/")
                     val cowinIntent = Intent(Intent.ACTION_VIEW, url)
@@ -86,9 +92,13 @@ class MainActivity : FlutterActivity() {
         // Get Uri from picker
         if (requestCode == RINGTONE) {
             // Returns Uri
-            val ringtone = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            val ringtoneName = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            Log.d("MainActivity", ringtone.toString());
+//            val ringtoneUri = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+//            val ringtone = RingtoneManager.getRingtone(this, ringtoneUri)
+//            val ringtoneName = ringtone.getTitle(this)
+            val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+            val ringtone = RingtoneManager.getRingtone(this, defaultRingtoneUri)
+            val ringtoneName = ringtone.getTitle(this)
+            Log.d("MainActivity", ringtoneName);
             // TODO: Update DB 
 //            Log.d("ringtone path", ringtone.toString())
         }

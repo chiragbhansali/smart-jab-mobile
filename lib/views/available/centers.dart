@@ -85,6 +85,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       center['lat'] = c['lat'];
       center['long'] = c['long'];
       center['fee'] = c['fee_type'];
+      center['min_age'] = [];
 
       bool sessionNotFound = true;
 
@@ -95,7 +96,9 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
           center['slots'] = center['slots'] == null
               ? getSlots(session)
               : center['slots'] + getSlots(session);
-          center['min_age'] = session['min_age_limit'];
+          if (!center['min_age'].contains(session['min_age_limit'])) {
+            center['min_age'].add(session['min_age_limit']);
+          }
         }
       }
 
@@ -104,11 +107,11 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
         if (session != null) {
           center['vaccine'] = session['vaccine'];
           center['slots'] = 0;
-          center['min_age'] = session['min_age_limit'];
+          center['min_age'].add(session['min_age_limit']);
         } else {
           center['vaccine'] = "Not Known";
           center['slots'] = 0;
-          center['min_age'] = "18";
+          center['min_age'].add(18);
         }
       }
 
@@ -559,11 +562,19 @@ class _CenterCardState extends State<CenterCard> {
                 padding: EdgeInsets.only(bottom: 24, left: 24, right: 24),
                 child: Row(
                   children: [
-                    Text("${widget.center['min_age']}+",
-                        style: TextStyle(
-                            color: Color(0xff616E7C),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16)),
+                    Row(
+                        children: widget.center['min_age']
+                            .map<Widget>(
+                              (a) => Container(
+                                margin: EdgeInsets.only(right: 8),
+                                child: Text("$a+",
+                                    style: TextStyle(
+                                        color: Color(0xff616E7C),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16)),
+                              ),
+                            )
+                            .toList()),
                     Expanded(child: Container()),
                     Text(
                         "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",

@@ -16,7 +16,7 @@ class DatabaseProvider {
 
   Future<Database> getDatabaseInstance() async {
     return await openDatabase(join(await getDatabasesPath(), "alarms.db"),
-        version: 2, onCreate: (Database db, int version) async {
+        version: 3, onCreate: (Database db, int version) async {
       await db.execute("CREATE TABLE IF NOT EXISTS Alarm("
           "id integer primary key AUTOINCREMENT,"
           "pincode TEXT,"
@@ -30,10 +30,22 @@ class DatabaseProvider {
           "dose1 TEXT,"
           "dose2 TEXT,"
           "minAvailable INTEGER,"
-          "radius INTEGER"
+          "radius INTEGER,"
+          "ringtoneUri TEXT,"
+          "ringtoneName TEXT,"
+          "vibrate TEXT"
           ")");
     }, onUpgrade: (Database db, int oldVersion, int newVersion) async {
-      await db.execute("ALTER TABLE Alarm ADD radius INTEGER");
+      if (newVersion == 2) {
+        await db.execute("ALTER TABLE Alarm ADD radius INTEGER");
+      } else if (newVersion == 3) {
+        await db.execute(
+            """ALTER TABLE Alarm ADD ringtoneUri TEXT DEFAULT 'default'""");
+        await db.execute(
+            """ALTER TABLE Alarm ADD ringtoneName TEXT DEFAULT 'default'""");
+        await db
+            .execute("""ALTER TABLE Alarm ADD vibrate TEXT DEFAULT 'true'""");
+      }
     });
   }
 
@@ -50,6 +62,7 @@ class DatabaseProvider {
 
     List<Alarm> alarmsList = [];
     res.forEach((element) {
+      print(element);
       alarmsList.add(Alarm.fromMap(element));
     });
     return alarmsList;
