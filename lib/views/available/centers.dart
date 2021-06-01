@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:vaccine_slot_notifier/views/available/hospital.dart';
 
 class CentersAvailableSlots extends StatefulWidget {
   final String selectedDate;
@@ -80,7 +82,9 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       Map center = {};
 
       center['name'] = c['name'];
-      center['address'] = "${c['block_name']}, ${c['pincode']}";
+      // center['address'] = "${c['block_name']}, ${c['pincode']}";
+      center['address'] =
+          "${c['block_name'] == "Not Applicable" ? c['district_name'] : c['block_name']}, ${c['pincode']}";
       center['mapsAddress'] = c['address'];
       center['lat'] = c['lat'];
       center['long'] = c['long'];
@@ -447,19 +451,13 @@ class _CenterCardState extends State<CenterCard> {
                                 'com.arnav.smartjab/flutter',
                               );
                               try {
-                                var result =
-                                    await platform.invokeMethod("openMaps", {
-                                  "address":
-                                      "${widget.center['name']}, ${widget.center['mapsAddress']}, ${widget.center['address']}",
-                                  "lat": widget.center['lat'],
-                                  "long": widget.center['long']
-                                });
+                                await platform.invokeMethod("openCowin");
                               } catch (e) {}
                             },
-                            leading: Icon(Icons.directions,
+                            leading: Icon(Icons.open_in_new,
                                 color: Color(0xff616E7C), size: 28),
                             title: Text(
-                              "Get Directions",
+                              "Open CoWin",
                               style: TextStyle(
                                   color: Color(0xff323F4B),
                                   fontSize: 18,
@@ -472,13 +470,43 @@ class _CenterCardState extends State<CenterCard> {
                                 'com.arnav.smartjab/flutter',
                               );
                               try {
-                                await platform.invokeMethod("openCowin");
+                                var result =
+                                    await platform.invokeMethod("openMaps", {
+                                  "address":
+                                      "${widget.center['name']}, ${widget.center['mapsAddress']}, ${widget.center['address']}",
+                                  "lat": widget.center['lat'],
+                                  "long": widget.center['long']
+                                });
                               } catch (e) {}
                             },
-                            leading: Icon(Icons.open_in_new,
+                            leading: Icon(Icons.directions_outlined,
                                 color: Color(0xff616E7C), size: 28),
                             title: Text(
-                              "Open CoWin",
+                              "Get Directions",
+                              style: TextStyle(
+                                  color: Color(0xff323F4B),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          ListTile(
+                            onTap: () async {
+                              Navigator.push(
+                                  context,
+                                  PageTransition(
+                                      child: HospitalScreen(
+                                          name: "${widget.center['name']}",
+                                          address:
+                                              "${widget.center['mapsAddress']}, ${widget.center['address']}"),
+                                      type: PageTransitionType.bottomToTop,
+                                      duration: Duration(milliseconds: 250),
+                                      reverseDuration:
+                                          Duration(milliseconds: 250)));
+                            },
+                            leading: Icon(Icons.info_outlined,
+                                color: Color(0xff616E7C), size: 28),
+                            title: Text(
+                              "View Details",
                               style: TextStyle(
                                   color: Color(0xff323F4B),
                                   fontSize: 18,
