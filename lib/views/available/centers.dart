@@ -80,7 +80,8 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       Map center = {};
 
       center['name'] = c['name'];
-      center['address'] = "${c['block_name']}, ${c['pincode']}";
+      center['address'] =
+          "${c['block_name'] == "Not Applicable" ? c['district_name'] : c['block_name']}, ${c['pincode']}";
       center['mapsAddress'] = c['address'];
       center['lat'] = c['lat'];
       center['long'] = c['long'];

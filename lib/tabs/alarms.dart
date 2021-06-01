@@ -218,8 +218,8 @@ class _AlarmCardState extends State<AlarmCard> {
                         const platform = const MethodChannel(
                           'com.arnav.smartjab/flutter',
                         );
-                        var result =
-                            await platform.invokeMethod("chooseRingtone");
+                        var result = await platform.invokeMethod(
+                            "chooseRingtone", {"alarmId": alarm.id});
                       },
                       child: Container(
                         child: Row(
