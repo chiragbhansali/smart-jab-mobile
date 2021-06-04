@@ -439,8 +439,13 @@ class _EditAlarmBottomSheetState extends State<EditAlarmBottomSheet> {
                               dose1: dose1.toString(),
                               dose2: dose2.toString(),
                               isOn: alarmData.isOn.toString(),
-                              radius: radius == "null" ? null : double.parse(radius).round(),
-                              minAvailable: double.parse(minAvailable).round());
+                              radius: radius == "null"
+                                  ? null
+                                  : double.parse(radius).round(),
+                              minAvailable: double.parse(minAvailable).round(),
+                              ringtoneName: alarmData.ringtoneName,
+                              ringtoneUri: alarmData.ringtoneUri,
+                              vibrate: alarmData.vibrate);
                           setState(() {
                             isLoading = true;
                           });
