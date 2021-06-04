@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
-import androidx.core.content.ContextCompat.getSystemService
 
 var mp: MediaPlayer? = null
 
@@ -24,6 +23,8 @@ class AlarmActionsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.extras != null) {
             val action: String? = intent.getStringExtra("ACTION")
+            val sharedPrefs = context.getSharedPreferences(context.getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
+            val isVibrateOn = sharedPrefs.getBoolean("vibrate", false)
 
             if (action == "DISMISS") {
                 context.sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
@@ -39,12 +40,18 @@ class AlarmActionsReceiver : BroadcastReceiver() {
                 mp?.release()
                 mp = null
             } else if (action == "START") {
-                v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    v?.vibrate(VibrationEffect.createWaveform(longArrayOf(1000, 1000), 0));
+                if (isVibrateOn) {
+                    v = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    v?.cancel()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        v?.vibrate(VibrationEffect.createWaveform(longArrayOf(1000, 1000), 0))
+                    } else {
+                        v?.vibrate(longArrayOf(1000, 1000), 0)
+                    }
                 }
-
-                val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+//                val ringtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+                val default = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+                val ringtoneUri = Uri.parse(sharedPrefs.getString("ringtoneUri", default.toString()))
                 mp = MediaPlayer()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     mp?.setAudioAttributes(
@@ -56,7 +63,7 @@ class AlarmActionsReceiver : BroadcastReceiver() {
                 } else {
                     mp?.setAudioStreamType(AudioManager.STREAM_ALARM)
                 }
-                mp?.setDataSource(context, defaultRingtoneUri)
+                mp?.setDataSource(context, ringtoneUri)
                 mp?.prepare()
 //                mp = MediaPlayer.create(context, defaultRingtoneUri)
                 mp?.start()

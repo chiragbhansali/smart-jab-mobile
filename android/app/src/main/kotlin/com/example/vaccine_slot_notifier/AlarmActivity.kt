@@ -16,13 +16,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -36,14 +30,17 @@ class AlarmActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_alarm)
-
         Log.d("AlarmActivity", mp?.isPlaying.toString())
-
+        val sharedPrefs = getSharedPreferences(getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
+        val isVibrateOn = sharedPrefs.getBoolean("vibrate", false)
+        val default = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+        val ringtoneUri = Uri.parse(sharedPrefs.getString("ringtoneUri", default.toString()))
+        Log.d("AlarmWorkerRingtoneUri", ringtoneUri.toString())
         if (mp?.isPlaying != true && mp != null) {
             mp?.reset()
             mp?.release()
             mp = null
-            val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+//            val ringtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
             mp = MediaPlayer()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mp?.setAudioAttributes(AudioAttributes.Builder()
@@ -55,16 +52,20 @@ class AlarmActivity : AppCompatActivity() {
                 mp?.setAudioStreamType(AudioManager.STREAM_ALARM)
             }
 //            mp = MediaPlayer.create(this, defaultRingtoneUri)
-            mp?.setDataSource(this, defaultRingtoneUri)
+            mp?.setDataSource(this, ringtoneUri)
             mp?.prepare()
             mp?.start()
         }
 
-
-        val v: Vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        v.cancel()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createWaveform(longArrayOf(1000, 1000), 0))
+        Log.d("AlarmActivityVibrate1", isVibrateOn.toString())
+        if (isVibrateOn) {
+            val v: Vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            v.cancel()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createWaveform(longArrayOf(1000, 1000), 0))
+            } else {
+                v.vibrate(longArrayOf(1000, 1000), 0)
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
@@ -83,7 +84,6 @@ class AlarmActivity : AppCompatActivity() {
             keyGuardManager.requestDismissKeyguard(this, null)
         }
 
-        val sharedPrefs = getSharedPreferences(getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
 
         val placeText: TextView = findViewById(R.id.centerName)
         val slotsText: TextView = findViewById(R.id.slotsAvailable)
@@ -131,9 +131,9 @@ class AlarmActivity : AppCompatActivity() {
     private fun dismiss() {
         val notifManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifManager.cancel(19002007)
-
         val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         v.cancel()
+
 
 
         mp?.stop()

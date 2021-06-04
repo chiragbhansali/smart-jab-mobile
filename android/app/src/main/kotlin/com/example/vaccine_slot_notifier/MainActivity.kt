@@ -1,10 +1,13 @@
 package com.example.vaccine_slot_notifier
 
+import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -20,6 +23,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "openMaps" -> {
@@ -32,8 +36,41 @@ class MainActivity : FlutterActivity() {
                 "chooseRingtone" -> {
                     // Choose Ringtone Picker intent
                     val chooseIntent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                    // Default uri
+                    val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+                    val sharedPrefs = applicationContext.getSharedPreferences(
+                        applicationContext.getString(R.string.shared_prefs_key),
+                        Context.MODE_PRIVATE
+                    )
+                    with(sharedPrefs.edit()) {
+                        call.argument<Int>("alarmId")?.let { putInt("alarmId", it) }
+                        commit()
+                    }
+                    // get ringtone
+                    val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(
+                        applicationContext.getDatabasePath("alarms.db").absolutePath,
+                        null
+                    )
+                    val resultSet: Cursor = db.rawQuery("select * from Alarm", null)
+                    resultSet.moveToPosition(sharedPrefs.getInt("alarmId", 1) - 1)
+                    val ringtone = resultSet.getString(13)
+                    val currentRingtone = Uri.parse(if (ringtone != "default") ringtone else defaultRingtoneUri.toString())
+                    resultSet.close()
+                    db.close()
+                    // set ringtone type as alarm
+                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+                    // set default ringtone
+                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, defaultRingtoneUri)
+                    // set selected ringtone
+                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone)
                     startActivityForResult(chooseIntent, RINGTONE)
                     result.success("")
+                }
+                "getDefaultRingtoneName" -> {
+                    val defaultRingtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
+                    val ringtone = RingtoneManager.getRingtone(this, defaultRingtoneUri)
+                    val ringtoneName = ringtone.getTitle(this)
+                    result.success(ringtoneName)
                 }
                 "openCowin" -> {
                     val url = Uri.parse("https://selfregistration.cowin.gov.in/")
@@ -86,11 +123,31 @@ class MainActivity : FlutterActivity() {
         // Get Uri from picker
         if (requestCode == RINGTONE) {
             // Returns Uri
-            val ringtone = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            val ringtoneName = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-            Log.d("MainActivity", ringtone.toString());
-            // TODO: Update DB 
+            val sharedPrefs = getSharedPreferences(getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
+            val ringtoneUri = data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            val ringtone = RingtoneManager.getRingtone(this, ringtoneUri)
+            val ringtoneName = ringtone.getTitle(this)
+
+
+            if (ringtoneUri != null) {
+                val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(
+                    applicationContext.getDatabasePath("alarms.db").absolutePath,
+                    null
+                )
+
+                val cv = ContentValues()
+                cv.put("ringtoneUri", ringtoneUri.toString())
+                cv.put("ringtoneName", ringtoneName)
+
+
+
+                db.update("Alarm", cv, "id = ?", arrayOf(sharedPrefs.getInt("alarmId", 1).toString()))
 //            Log.d("ringtone path", ringtone.toString())
+                with(sharedPrefs.edit()) {
+                    remove("alarmId")
+                    commit()
+                }
+            }
         }
     }
 }

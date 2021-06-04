@@ -28,6 +28,10 @@ class _AlarmsTabState extends State<AlarmsTab> {
 
     var res = await DatabaseProvider.db.getAlarms();
 
+    // res.forEach((e) {
+    //   print(e.toMap());
+    // });
+
     setState(() {
       alarms = res;
       isLoading = false;
@@ -116,15 +120,34 @@ class AlarmCard extends StatefulWidget {
 
 class _AlarmCardState extends State<AlarmCard> {
   Alarm alarm;
+  var ringtoneName = "";
   bool isVibrateChecked = false;
   bool toBool(String v) {
     return v == "true";
+  }
+
+  void setRingtoneName(String r) async {
+    if (r == "default") {
+      const platform = const MethodChannel(
+        'com.arnav.smartjab/flutter',
+      );
+      var result = await platform.invokeMethod("getDefaultRingtoneName");
+      print(result);
+      setState(() {
+        ringtoneName = "Default ($result)";
+      });
+    } else {
+      setState(() {
+        ringtoneName = r;
+      });
+    }
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    setRingtoneName(widget.alarm.ringtoneName);
     alarm = widget.alarm;
     print(widget.alarm.toMap());
   }
@@ -187,19 +210,23 @@ class _AlarmCardState extends State<AlarmCard> {
                       }),
                 ],
               ),
-              SizedBox(height: 20, width: MediaQuery.of(context).size.width),
-              Row(
-                children: [
-                  GestureDetector(
-                      onTap: () async {
-                        const platform = const MethodChannel(
-                          'com.arnav.smartjab/flutter',
-                        );
-                        var result =
-                            await platform.invokeMethod("chooseRingtone");
-                      },
-                      child: Container(
-                        child: Row(
+              SizedBox(height: 20),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    GestureDetector(
+                        onTap: () async {
+                          const platform = const MethodChannel(
+                            'com.arnav.smartjab/flutter',
+                          );
+                          var result = await platform.invokeMethod(
+                              "chooseRingtone", {"alarmId": alarm.id});
+                        },
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Icon(
                               Icons.notifications_active_outlined,
@@ -207,46 +234,61 @@ class _AlarmCardState extends State<AlarmCard> {
                               size: 24,
                             ),
                             SizedBox(width: 12),
-                            Text("Default(Oxygen)",
+                            Text(ringtoneName,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   color: Color.fromRGBO(62, 76, 89, 1),
                                   fontWeight: FontWeight.w500,
                                 )),
                           ],
-                        ),
-                      )),
-                  Expanded(child: Container(), flex: 1),
-                  Checkbox(
-                    value: isVibrateChecked,
-                    onChanged: (value) {
-                      setState(() {
-                        isVibrateChecked = value;
-                        print(isVibrateChecked);
-                      });
-                    },
-                  ),
-                  Expanded(child: Container(), flex: 0),
-                  GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        isVibrateChecked = !isVibrateChecked;
-                        print(isVibrateChecked);
-                      });
-                    },
-                    child: Text(
-                      "Vibrate",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xff3E4C59),
-                        fontWeight: FontWeight.w500,
+                        )),
+                    Container(
+                      constraints: BoxConstraints(maxWidth: 103),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 25,
+                            child: Checkbox(
+                              value: toBool(alarm.vibrate),
+                              onChanged: (v) async {
+                                await DatabaseProvider.db
+                                    .editAlarmVibrateState(alarm.id, v);
+                                setState(() {
+                                  alarm.vibrate = v.toString();
+                                });
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: 12,
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              bool state = !toBool(alarm.vibrate);
+                              await DatabaseProvider.db.editAlarmVibrateState(
+                                  alarm.id, !toBool(alarm.vibrate));
+                              setState(() {
+                                alarm.vibrate = state.toString();
+                              });
+                            },
+                            child: Text(
+                              "Vibrate",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xff3E4C59),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          )
+                        ],
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  )
-                ],
+                  ],
+                ),
               ),
             ],
           )),

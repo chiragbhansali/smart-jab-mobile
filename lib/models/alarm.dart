@@ -12,6 +12,9 @@ class Alarm {
   String dose2;
   int minAvailable;
   int radius;
+  String ringtoneUri;
+  String ringtoneName;
+  String vibrate;
 
   Alarm(
       {this.id,
@@ -26,7 +29,10 @@ class Alarm {
       this.dose1,
       this.dose2,
       this.minAvailable,
-      this.radius});
+      this.radius,
+      this.ringtoneUri = 'default',
+      this.ringtoneName = 'default',
+      this.vibrate = 'true'});
 
   Map<String, dynamic> toMap() => {
         "id": id,
@@ -41,7 +47,10 @@ class Alarm {
         "minAvailable": minAvailable,
         "radius": radius,
         "dose1": dose1,
-        "dose2": dose2
+        "dose2": dose2,
+        "ringtoneUri": ringtoneUri,
+        "ringtoneName": ringtoneName,
+        "vibrate": vibrate
       };
 
   factory Alarm.fromMap(Map<String, dynamic> json) => new Alarm(
@@ -57,5 +66,8 @@ class Alarm {
       dose1: json['dose1'],
       dose2: json['dose2'],
       minAvailable: json['minAvailable'],
-      radius: json['radius']);
+      radius: json['radius'],
+      ringtoneUri: json['ringtoneUri'],
+      ringtoneName: json['ringtoneName'],
+      vibrate: json['vibrate']);
 }

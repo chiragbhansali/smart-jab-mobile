@@ -79,6 +79,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         eighteenPlus = false;
         fortyfivePlus = false;
         covaxin = false;
+        dose1 = true;
+        dose2 = true;
+        loading = true;
         covishield = false;
       });
       var date = DateTime.now();
@@ -165,6 +168,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       setState(() {
         eighteenPlus = false;
         fortyfivePlus = false;
+        dose1 = true;
+        dose2 = true;
         covaxin = false;
         covishield = false;
         loading = true;
@@ -200,6 +205,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       // var data = await http.get(Uri.parse(
       //     "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=$pincode&date=$formattedDate"));
       // var body = jsonDecode(data.body);
+      print(body['centers'].length);
       apiData = body;
       if (body == null || body['centers'] == null) {
         setState(() {
@@ -249,7 +255,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         return;
       }
       List datesArray = [];
-      print("here5");
+      print(slots);
 
       slots.keys.toList().forEach((date) {
         datesArray.add({"date": date, "slots": slots[date]});
