@@ -322,9 +322,13 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
                 )
                 with(sharedPrefs.edit()) {
                     val place = alarm.pincode ?: alarm.districtName
+                    val vibrate = alarm.vibrate
+                    val ringtoneUri = alarm.ringtoneUri
                     putString("place", place)
                     putInt("slotsIn", slotsIn)
                     putInt("slotsOpen", slotsOpen)
+                    putBoolean("vibrate", vibrate)
+                    putString("ringtoneUri", ringtoneUri)
                     commit()
                 }
                 break
@@ -334,7 +338,6 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
         if (triggerAlarm) {
             triggerAlarm()
         }
-
         return Result.success()
     }
 

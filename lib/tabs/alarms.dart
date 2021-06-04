@@ -210,19 +210,23 @@ class _AlarmCardState extends State<AlarmCard> {
                       }),
                 ],
               ),
-              SizedBox(height: 20, width: MediaQuery.of(context).size.width),
-              Row(
-                children: [
-                  GestureDetector(
-                      onTap: () async {
-                        const platform = const MethodChannel(
-                          'com.arnav.smartjab/flutter',
-                        );
-                        var result = await platform.invokeMethod(
-                            "chooseRingtone", {"alarmId": alarm.id});
-                      },
-                      child: Container(
-                        child: Row(
+              SizedBox(height: 20),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    GestureDetector(
+                        onTap: () async {
+                          const platform = const MethodChannel(
+                            'com.arnav.smartjab/flutter',
+                          );
+                          var result = await platform.invokeMethod(
+                              "chooseRingtone", {"alarmId": alarm.id});
+                        },
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Icon(
                               Icons.notifications_active_outlined,
@@ -237,42 +241,54 @@ class _AlarmCardState extends State<AlarmCard> {
                                   fontWeight: FontWeight.w500,
                                 )),
                           ],
-                        ),
-                      )),
-                  Expanded(child: Container(), flex: 1),
-                  Checkbox(
-                    value: toBool(alarm.vibrate),
-                    onChanged: (v) async {
-                      await DatabaseProvider.db
-                          .editAlarmVibrateState(alarm.id, v);
-                      setState(() {
-                        alarm.vibrate = v.toString();
-                      });
-                    },
-                  ),
-                  Expanded(child: Container(), flex: 0),
-                  GestureDetector(
-                    onTap: () async {
-                      bool state = !toBool(alarm.vibrate);
-                      await DatabaseProvider.db.editAlarmVibrateState(
-                          alarm.id, !toBool(alarm.vibrate));
-                      setState(() {
-                        alarm.vibrate = state.toString();
-                      });
-                    },
-                    child: Text(
-                      "Vibrate",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xff3E4C59),
-                        fontWeight: FontWeight.w500,
+                        )),
+                    Container(
+                      constraints: BoxConstraints(maxWidth: 103),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 25,
+                            child: Checkbox(
+                              value: toBool(alarm.vibrate),
+                              onChanged: (v) async {
+                                await DatabaseProvider.db
+                                    .editAlarmVibrateState(alarm.id, v);
+                                setState(() {
+                                  alarm.vibrate = v.toString();
+                                });
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: 12,
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              bool state = !toBool(alarm.vibrate);
+                              await DatabaseProvider.db.editAlarmVibrateState(
+                                  alarm.id, !toBool(alarm.vibrate));
+                              setState(() {
+                                alarm.vibrate = state.toString();
+                              });
+                            },
+                            child: Text(
+                              "Vibrate",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xff3E4C59),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          )
+                        ],
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  )
-                ],
+                  ],
+                ),
               ),
             ],
           )),
