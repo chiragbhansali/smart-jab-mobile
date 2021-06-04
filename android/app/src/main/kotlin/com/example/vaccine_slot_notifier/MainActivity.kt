@@ -3,11 +3,11 @@ package com.example.vaccine_slot_notifier
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -47,9 +47,16 @@ class MainActivity : FlutterActivity() {
                         commit()
                     }
                     // get ringtone
-                    val ringtone = sharedPrefs.getString("ringtoneUri", defaultRingtoneUri.toString())
-                    val currentRingtone = Uri.parse(ringtone ?: defaultRingtoneUri.toString())
-
+                    val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(
+                        applicationContext.getDatabasePath("alarms.db").absolutePath,
+                        null
+                    )
+                    val resultSet: Cursor = db.rawQuery("select * from Alarm", null)
+                    resultSet.moveToPosition(sharedPrefs.getInt("alarmId", 1) - 1)
+                    val ringtone = resultSet.getString(13)
+                    val currentRingtone = Uri.parse(if (ringtone != "default") ringtone else defaultRingtoneUri.toString())
+                    resultSet.close()
+                    db.close()
                     // set ringtone type as alarm
                     chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
                     // set default ringtone
@@ -127,6 +134,7 @@ class MainActivity : FlutterActivity() {
                     applicationContext.getDatabasePath("alarms.db").absolutePath,
                     null
                 )
+
                 val cv = ContentValues()
                 cv.put("ringtoneUri", ringtoneUri.toString())
                 cv.put("ringtoneName", ringtoneName)
@@ -136,7 +144,6 @@ class MainActivity : FlutterActivity() {
                 db.update("Alarm", cv, "id = ?", arrayOf(sharedPrefs.getInt("alarmId", 1).toString()))
 //            Log.d("ringtone path", ringtone.toString())
                 with(sharedPrefs.edit()) {
-                    putString("ringtoneUri", ringtoneUri.toString())
                     remove("alarmId")
                     commit()
                 }
