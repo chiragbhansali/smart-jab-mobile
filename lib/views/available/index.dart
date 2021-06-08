@@ -79,8 +79,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         eighteenPlus = false;
         fortyfivePlus = false;
         covaxin = false;
-        dose1 = true;
-        dose2 = true;
+        dose1 = false;
+        dose2 = false;
         loading = true;
         covishield = false;
       });
@@ -168,8 +168,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
       setState(() {
         eighteenPlus = false;
         fortyfivePlus = false;
-        dose1 = true;
-        dose2 = true;
+        dose1 = false;
+        dose2 = false;
         covaxin = false;
         covishield = false;
         loading = true;

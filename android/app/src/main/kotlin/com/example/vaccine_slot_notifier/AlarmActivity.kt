@@ -34,7 +34,7 @@ class AlarmActivity : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences(getString(R.string.shared_prefs_key), Context.MODE_PRIVATE)
         val isVibrateOn = sharedPrefs.getBoolean("vibrate", false)
         val default = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM)
-        val ringtoneUri = Uri.parse(sharedPrefs.getString("ringtoneUri", default.toString()))
+        val ringtoneUri = sharedPrefs.getString("ringtoneUri", default.toString())
         Log.d("AlarmWorkerRingtoneUri", ringtoneUri.toString())
         if (mp?.isPlaying != true && mp != null) {
             mp?.reset()
@@ -52,7 +52,7 @@ class AlarmActivity : AppCompatActivity() {
                 mp?.setAudioStreamType(AudioManager.STREAM_ALARM)
             }
 //            mp = MediaPlayer.create(this, defaultRingtoneUri)
-            mp?.setDataSource(this, ringtoneUri)
+            mp?.setDataSource(this, if(ringtoneUri == "default") default else Uri.parse(ringtoneUri))
             mp?.prepare()
             mp?.start()
         }

@@ -51,7 +51,7 @@ class AlarmActionsReceiver : BroadcastReceiver() {
                 }
 //                val ringtoneUri: Uri = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
                 val default = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-                val ringtoneUri = Uri.parse(sharedPrefs.getString("ringtoneUri", default.toString()))
+                val ringtoneUri = sharedPrefs.getString("ringtoneUri", default.toString())
                 mp = MediaPlayer()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     mp?.setAudioAttributes(
@@ -63,7 +63,7 @@ class AlarmActionsReceiver : BroadcastReceiver() {
                 } else {
                     mp?.setAudioStreamType(AudioManager.STREAM_ALARM)
                 }
-                mp?.setDataSource(context, ringtoneUri)
+                mp?.setDataSource(context, if(ringtoneUri == "default") default else Uri.parse(ringtoneUri))
                 mp?.prepare()
 //                mp = MediaPlayer.create(context, defaultRingtoneUri)
                 mp?.start()
