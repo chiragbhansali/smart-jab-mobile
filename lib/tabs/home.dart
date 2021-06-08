@@ -104,7 +104,7 @@ class _HomeTabState extends State<HomeTab> {
                               });
                               _pageController.animateToPage(i,
                                   duration: Duration(milliseconds: 300),
-                                  curve: Curves.bounceInOut);
+                                  curve: Curves.ease);
                             },
                             groupValue: tabIndex,
                           ),
