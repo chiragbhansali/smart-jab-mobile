@@ -499,16 +499,17 @@ class _CenterCardState extends State<CenterCard> {
                                   context,
                                   PageTransition(
                                       child: HospitalScreen(
-                                        centerId:
-                                            "${widget.center['center_id']}",
-                                        name: "${widget.center['name']}",
-                                        address:
-                                            "${widget.center['mapsAddress']}, ${widget.center['address']}",
-                                        age: widget.center['min_age'],
-                                        vaccine:
-                                            "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
-                                        selectedDate: widget.selectedDate,
-                                      ),
+                                          centerId:
+                                              "${widget.center['center_id']}",
+                                          name: "${widget.center['name']}",
+                                          address:
+                                              "${widget.center['mapsAddress']}, ${widget.center['address']}",
+                                          age: widget.center['min_age'],
+                                          vaccine:
+                                              "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
+                                          selectedDate: widget.selectedDate,
+                                          lat: widget.center['lat'],
+                                          long: widget.center['long']),
                                       type: PageTransitionType.bottomToTop,
                                       duration: Duration(milliseconds: 250),
                                       reverseDuration:

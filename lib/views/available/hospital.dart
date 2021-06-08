@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import "package:http/http.dart" as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +11,17 @@ class HospitalScreen extends StatefulWidget {
   final dynamic age;
   final String vaccine;
   final String selectedDate;
+  final dynamic lat;
+  final dynamic long;
   const HospitalScreen(
       {this.centerId,
       this.name,
       this.address,
       this.age,
       this.vaccine,
-      this.selectedDate});
+      this.selectedDate,
+      this.lat,
+      this.long});
 
   @override
   _HospitalScreenState createState() => _HospitalScreenState();
@@ -54,7 +59,18 @@ class _HospitalScreenState extends State<HospitalScreen> {
                 fontSize: 18)),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          const platform = const MethodChannel(
+            'com.arnav.smartjab/flutter',
+          );
+          try {
+            var result = await platform.invokeMethod("openMaps", {
+              "address": "${widget.name}, ${widget.address}}",
+              "lat": widget.lat,
+              "long": widget.long
+            });
+          } catch (e) {}
+        },
         backgroundColor: Color(0xff0A6CFF),
         child: Center(
           child: Icon(
