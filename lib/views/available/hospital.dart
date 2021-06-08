@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html';
 import 'package:flutter/services.dart';
 import "package:http/http.dart" as http;
 import 'package:flutter/cupertino.dart';
@@ -189,6 +188,7 @@ class _HospitalScreenState extends State<HospitalScreen> {
               left: 22,
               right: 22,
             ),
+            height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
