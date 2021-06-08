@@ -81,6 +81,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
     data.forEach((c) {
       Map center = {};
 
+      center['center_id'] = c['center_id'];
       center['name'] = c['name'];
       center['address'] =
           "${c['block_name'] == "Not Applicable" ? c['district_name'] : c['block_name']}, ${c['pincode']}";
@@ -401,7 +402,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                   itemCount: centersList.length,
                   itemBuilder: (context, index) {
                     //print(centersList);
-                    return CenterCard(centersList[index]);
+                    return CenterCard(centersList[index], widget.selectedDate);
                   },
                 ),
               ),
@@ -415,7 +416,8 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
 
 class CenterCard extends StatefulWidget {
   final Map<dynamic, dynamic> center;
-  CenterCard(this.center);
+  final String selectedDate;
+  CenterCard(this.center, this.selectedDate);
   @override
   _CenterCardState createState() => _CenterCardState();
 }
@@ -497,9 +499,17 @@ class _CenterCardState extends State<CenterCard> {
                                   context,
                                   PageTransition(
                                       child: HospitalScreen(
+                                          centerId:
+                                              "${widget.center['center_id']}",
                                           name: "${widget.center['name']}",
                                           address:
-                                              "${widget.center['mapsAddress']}, ${widget.center['address']}"),
+                                              "${widget.center['mapsAddress']}, ${widget.center['address']}",
+                                          age: widget.center['min_age'],
+                                          vaccine:
+                                              "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
+                                          selectedDate: widget.selectedDate,
+                                          lat: widget.center['lat'],
+                                          long: widget.center['long']),
                                       type: PageTransitionType.bottomToTop,
                                       duration: Duration(milliseconds: 250),
                                       reverseDuration:
