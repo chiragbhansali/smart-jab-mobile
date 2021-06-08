@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html';
 import 'package:flutter/services.dart';
 import "package:http/http.dart" as http;
 import 'package:flutter/cupertino.dart';
@@ -149,165 +150,186 @@ class _HospitalScreenState extends State<HospitalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 60,
-        backgroundColor: Color(0xffF5F7FA),
-        elevation: 0,
-        iconTheme: IconThemeData(color: Color(0xff323F4B)),
-        centerTitle: true,
-        title: Text(widget.name,
-            style: TextStyle(
-                color: Color(0xff323F4B),
-                fontWeight: FontWeight.w500,
-                fontSize: 18)),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          const platform = const MethodChannel(
-            'com.arnav.smartjab/flutter',
-          );
-          try {
-            var result = await platform.invokeMethod("openMaps", {
-              "address": "${widget.name}, ${widget.address}}",
-              "lat": widget.lat,
-              "long": widget.long
-            });
-          } catch (e) {}
-        },
-        backgroundColor: Color(0xff0A6CFF),
-        child: Center(
-          child: Icon(
-            Icons.directions_outlined,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Container(
-        padding: EdgeInsets.only(
-          bottom: 20,
-          left: 22,
-          right: 22,
-          top: 20,
-        ),
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 20,
-            ),
-            Text(
-              "Address",
-              textAlign: TextAlign.start,
+        appBar: AppBar(
+          toolbarHeight: 60,
+          backgroundColor: Color(0xffF5F7FA),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xff323F4B)),
+          centerTitle: true,
+          title: Text(widget.name,
               style: TextStyle(
                   color: Color(0xff323F4B),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18)),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            const platform = const MethodChannel(
+              'com.arnav.smartjab/flutter',
+            );
+            try {
+              var result = await platform.invokeMethod("openMaps", {
+                "address": "${widget.name}, ${widget.address}}",
+                "lat": widget.lat,
+                "long": widget.long
+              });
+            } catch (e) {}
+          },
+          backgroundColor: Color(0xff0A6CFF),
+          child: Center(
+            child: Icon(
+              Icons.directions_outlined,
+              color: Colors.white,
             ),
-            SizedBox(
-              height: 12,
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.only(
+              left: 22,
+              right: 22,
             ),
-            Text("$addressFinal",
-                style: TextStyle(
-                    height: 1.5,
-                    color: Color(0xff3E4C59),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500)),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.person_outline_outlined,
-                  color: Theme.of(context).primaryColor,
-                ),
                 SizedBox(
-                  width: 20,
-                ),
-                Wrap(
-                  spacing: 4,
-                  children: widget.age
-                      .map<Widget>(
-                        (a) => Container(
-                          child: Text("$a+",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color(0xff3E4C59))),
-                        ),
-                      )
-                      .toList(),
-                ),
-                Expanded(
-                  child: Container(),
-                ),
-                Icon(
-                  Icons.medication_outlined,
-                  color: Theme.of(context).primaryColor,
-                ),
-                SizedBox(
-                  width: 20,
+                  height: 20,
                 ),
                 Text(
-                  "${widget.vaccine}",
+                  "Address",
+                  textAlign: TextAlign.start,
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff3E4C59)),
+                      color: Color(0xff323F4B),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(
+                  height: 12,
+                ),
+                Text("$addressFinal",
+                    style: TextStyle(
+                        height: 1.5,
+                        color: Color(0xff3E4C59),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500)),
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline_outlined,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Wrap(
+                      spacing: 4,
+                      children: widget.age
+                          .map<Widget>(
+                            (a) => Container(
+                              child: Text("$a+",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xff3E4C59))),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    Expanded(
+                      child: Container(),
+                    ),
+                    Icon(
+                      Icons.medication_outlined,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Text(
+                      "${widget.vaccine}",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff3E4C59)),
+                    ),
+                    Expanded(
+                      child: Container(),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 50,
+                ),
+                Text(
+                  "Slot opening history",
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff323F4B)),
                 ),
                 Expanded(
-                  child: Container(),
+                  child: Container(
+                    margin: EdgeInsets.only(top: 15),
+                    child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return SlotsPerDayCard(
+                            slotsArray[index]['date'],
+                            (slotsArray[index]['slots']).round(),
+                            slotsMap: slotsPerDay,
+                            apiData: apiData,
+                            filters: {
+                              "eighteenPlus": eighteenPlus,
+                              "fortyfivePlus": fortyfivePlus,
+                              "covaxin": covaxin,
+                              "covishield": covishield,
+                              "dose1": dose1,
+                              "dose2": dose2
+                            },
+                          );
+                        },
+                        itemCount: slotsArray.length),
+                  ),
                 ),
+                Text(
+                  "Slot Availability",
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff323F4B)),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(top: 15),
+                    child: ListView.builder(
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return SlotsPerDayCard(
+                            slotsArray[index]['date'],
+                            (slotsArray[index]['slots']).round(),
+                            slotsMap: slotsPerDay,
+                            apiData: apiData,
+                            filters: {
+                              "eighteenPlus": eighteenPlus,
+                              "fortyfivePlus": fortyfivePlus,
+                              "covaxin": covaxin,
+                              "covishield": covishield,
+                              "dose1": dose1,
+                              "dose2": dose2
+                            },
+                          );
+                        },
+                        itemCount: slotsArray.length),
+                  ),
+                )
               ],
             ),
-            SizedBox(
-              height: 50,
-            ),
-            Text(
-              "Slot opening history",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff323F4B)),
-            ),
-            SizedBox(
-              height: 50,
-            ),
-            Text(
-              "Slot Availability",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff323F4B)),
-            ),
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.only(top: 15),
-                child: ListView.builder(
-                    itemBuilder: (context, index) {
-                      return SlotsPerDayCard(
-                        slotsArray[index]['date'],
-                        (slotsArray[index]['slots']).round(),
-                        slotsMap: slotsPerDay,
-                        apiData: apiData,
-                        filters: {
-                          "eighteenPlus": eighteenPlus,
-                          "fortyfivePlus": fortyfivePlus,
-                          "covaxin": covaxin,
-                          "covishield": covishield,
-                          "dose1": dose1,
-                          "dose2": dose2
-                        },
-                      );
-                    },
-                    itemCount: slotsArray.length),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 }
 

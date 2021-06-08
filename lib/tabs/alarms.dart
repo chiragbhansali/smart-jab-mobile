@@ -212,80 +212,85 @@ class _AlarmCardState extends State<AlarmCard> {
               ),
               SizedBox(height: 20),
               Container(
+                margin: EdgeInsets.only(right: 10),
                 width: MediaQuery.of(context).size.width,
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    GestureDetector(
-                        onTap: () async {
-                          const platform = const MethodChannel(
-                            'com.arnav.smartjab/flutter',
-                          );
-                          var result = await platform.invokeMethod(
-                              "chooseRingtone", {"alarmId": alarm.id});
-                        },
-                        child: Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.notifications_active_outlined,
-                              color: Color.fromRGBO(62, 76, 89, 1),
-                              size: 24,
-                            ),
-                            SizedBox(width: 12),
-                            Text(ringtoneName,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color.fromRGBO(62, 76, 89, 1),
-                                  fontWeight: FontWeight.w500,
-                                )),
-                          ],
-                        )),
-                    Container(
-                      constraints: BoxConstraints(maxWidth: 103),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 25,
-                            child: Checkbox(
-                              value: toBool(alarm.vibrate),
-                              onChanged: (v) async {
-                                await DatabaseProvider.db
-                                    .editAlarmVibrateState(alarm.id, v);
-                                setState(() {
-                                  alarm.vibrate = v.toString();
-                                });
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: 12,
-                          ),
-                          GestureDetector(
-                            onTap: () async {
-                              bool state = !toBool(alarm.vibrate);
-                              await DatabaseProvider.db.editAlarmVibrateState(
-                                  alarm.id, !toBool(alarm.vibrate));
+                    Expanded(
+                      child: GestureDetector(
+                          onTap: () async {
+                            const platform = const MethodChannel(
+                              'com.arnav.smartjab/flutter',
+                            );
+                            var result = await platform.invokeMethod(
+                                "chooseRingtone", {"alarmId": alarm.id});
+                          },
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.notifications_active_outlined,
+                                color: Color.fromRGBO(62, 76, 89, 1),
+                                size: 24,
+                              ),
+                              SizedBox(width: 12),
+                              Flexible(
+                                child: Text(
+                                    ringtoneName.replaceAll("", "\u{200B}"),
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Color.fromRGBO(62, 76, 89, 1),
+                                      fontWeight: FontWeight.w500,
+                                    )),
+                              ),
+                            ],
+                          )),
+                    ),
+                    SizedBox(
+                      width: 12,
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 25,
+                          child: Checkbox(
+                            value: toBool(alarm.vibrate),
+                            onChanged: (v) async {
+                              await DatabaseProvider.db
+                                  .editAlarmVibrateState(alarm.id, v);
                               setState(() {
-                                alarm.vibrate = state.toString();
+                                alarm.vibrate = v.toString();
                               });
                             },
-                            child: Text(
-                              "Vibrate",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xff3E4C59),
-                                fontWeight: FontWeight.w500,
-                              ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            bool state = !toBool(alarm.vibrate);
+                            await DatabaseProvider.db.editAlarmVibrateState(
+                                alarm.id, !toBool(alarm.vibrate));
+                            setState(() {
+                              alarm.vibrate = state.toString();
+                            });
+                          },
+                          child: Text(
+                            "Vibrate",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xff3E4C59),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(
-                            width: 10,
-                          )
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
