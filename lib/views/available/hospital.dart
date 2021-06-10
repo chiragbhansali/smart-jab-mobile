@@ -39,20 +39,77 @@ class _HospitalScreenState extends State<HospitalScreen> {
   bool dose1 = false;
   bool dose2 = false;
   Map<dynamic, dynamic> slotsPerDay = {};
+  Map<dynamic, dynamic> slotsHistoryPerDay = {};
   List slotsArray = [];
+  List slotsHistoryArray = [];
   String addressFinal;
   bool loading = true;
+  bool historyLoading = true;
   bool noSlots = false;
+  bool noHistory = false;
 
   var apiData;
+  var apiHistoryData;
 
   String capitalizeFirstofEach(String address) => address
       .split(" ")
       .map((str) => "${str[0].toUpperCase()}${str.substring(1).toLowerCase()}")
       .join(" ");
 
+  void getSlotHistory() async {
+    const platform = const MethodChannel(
+      'com.arnav.smartjab/flutter',
+    );
+    var data = await http
+        .get(Uri.parse("https://smartjab.in/api/history/${widget.centerId}/"));
+    var body = jsonDecode(data.body);
+    apiHistoryData = body;
+    Map<dynamic, dynamic> slots = {};
+    var result = body['history'];
+
+    if (result == null) {
+      setState(() {
+        historyLoading = false;
+        noHistory = true;
+      });
+      return;
+    }
+
+    result.forEach((key, value) {
+      if (value['opened']) {
+        slots[key] = value['time'];
+      } else {
+        slots[key] = "Closed";
+      }
+    });
+
+    /* slots.values.toList().forEach((slots) {
+      if (slots > 0) {
+        isNoSlots = false;
+      }
+    }); */
+
+    /* if (isNoSlots) {
+      setState(() {
+        noSlots = true;
+        loading = false;
+      });
+      return;
+    } */
+
+    List datesArray = [];
+    slots.keys.toList().forEach((date) {
+      datesArray.add({"date": date, "slots": slots[date]});
+    });
+
+    setState(() {
+      slotsHistoryPerDay = slots;
+      historyLoading = false;
+      slotsHistoryArray = datesArray;
+    });
+  }
+
   void getCenterData() async {
-    print(widget.selectedDate);
     var data = await http.get(Uri.parse(
         "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByCenter?center_id=${widget.centerId}&date=${widget.selectedDate}"));
     var body = jsonDecode(data.body);
@@ -98,7 +155,6 @@ class _HospitalScreenState extends State<HospitalScreen> {
     });
 
     bool isNoSlots = true;
-    print(slots);
 
     slots.values.toList().forEach((slots) {
       if (slots > 0) {
@@ -114,10 +170,11 @@ class _HospitalScreenState extends State<HospitalScreen> {
       return;
     }
     List datesArray = [];
-
     slots.keys.toList().forEach((date) {
       datesArray.add({"date": date, "slots": slots[date]});
     });
+
+    print(datesArray.toString());
     datesArray.sort((a, b) {
       DateTime aDate = DateTime.parse(
           "${a['date'].substring(6)}-${a['date'].substring(3, 5)}-${a['date'].substring(0, 2)} 14:04:24.367573");
@@ -129,6 +186,7 @@ class _HospitalScreenState extends State<HospitalScreen> {
         return 1;
       }
     });
+    print(datesArray.toString());
 
     setState(() {
       noSlots = false;
@@ -143,55 +201,51 @@ class _HospitalScreenState extends State<HospitalScreen> {
     // TODO: implement initState
     super.initState();
     getCenterData();
+    getSlotHistory();
     addressFinal = capitalizeFirstofEach(widget.address.toLowerCase());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 60,
-          backgroundColor: Color(0xffF5F7FA),
-          elevation: 0,
-          iconTheme: IconThemeData(color: Color(0xff323F4B)),
-          centerTitle: true,
-          title: Text(widget.name,
-              style: TextStyle(
-                  color: Color(0xff323F4B),
-                  fontWeight: FontWeight.w500,
-                  fontSize: 18)),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            const platform = const MethodChannel(
-              'com.arnav.smartjab/flutter',
-            );
-            try {
-              var result = await platform.invokeMethod("openMaps", {
-                "address": "${widget.name}, ${widget.address}}",
-                "lat": widget.lat,
-                "long": widget.long
-              });
-            } catch (e) {}
-          },
-          backgroundColor: Color(0xff0A6CFF),
-          child: Center(
-            child: Icon(
-              Icons.directions_outlined,
-              color: Colors.white,
-            ),
+      appBar: AppBar(
+        toolbarHeight: 60,
+        backgroundColor: Color(0xffF5F7FA),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Color(0xff323F4B)),
+        centerTitle: true,
+        title: Text(widget.name,
+            style: TextStyle(
+                color: Color(0xff323F4B),
+                fontWeight: FontWeight.w500,
+                fontSize: 18)),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          const platform = const MethodChannel(
+            'com.arnav.smartjab/flutter',
+          );
+          try {
+            var result = await platform.invokeMethod("openMaps", {
+              "address": "${widget.name}, ${widget.address}}",
+              "lat": widget.lat,
+              "long": widget.long
+            });
+          } catch (e) {}
+        },
+        backgroundColor: Color(0xff0A6CFF),
+        child: Center(
+          child: Icon(
+            Icons.directions_outlined,
+            color: Colors.white,
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.only(
-              left: 22,
-              right: 22,
-            ),
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.only(left: 23, right: 23),
               children: [
                 SizedBox(
                   height: 20,
@@ -264,72 +318,90 @@ class _HospitalScreenState extends State<HospitalScreen> {
                 SizedBox(
                   height: 50,
                 ),
-                Text(
-                  "Slot opening history",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xff323F4B)),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(top: 15),
-                    child: ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return SlotsPerDayCard(
-                            slotsArray[index]['date'],
-                            (slotsArray[index]['slots']).round(),
-                            slotsMap: slotsPerDay,
-                            apiData: apiData,
-                            filters: {
-                              "eighteenPlus": eighteenPlus,
-                              "fortyfivePlus": fortyfivePlus,
-                              "covaxin": covaxin,
-                              "covishield": covishield,
-                              "dose1": dose1,
-                              "dose2": dose2
-                            },
-                          );
-                        },
-                        itemCount: slotsArray.length),
-                  ),
-                ),
-                Text(
-                  "Slot Availability",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xff323F4B)),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(top: 15),
-                    child: ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return SlotsPerDayCard(
-                            slotsArray[index]['date'],
-                            (slotsArray[index]['slots']).round(),
-                            slotsMap: slotsPerDay,
-                            apiData: apiData,
-                            filters: {
-                              "eighteenPlus": eighteenPlus,
-                              "fortyfivePlus": fortyfivePlus,
-                              "covaxin": covaxin,
-                              "covishield": covishield,
-                              "dose1": dose1,
-                              "dose2": dose2
-                            },
-                          );
-                        },
-                        itemCount: slotsArray.length),
-                  ),
+                (loading | historyLoading)
+                    ? Container(
+                        child: Center(child: CircularProgressIndicator()))
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Slot Opening History",
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xff323F4B)),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          noHistory
+                              ? NoSlots(true)
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return SlotsHistoryCard(
+                                      slotsHistoryArray[index]['date'],
+                                      (slotsHistoryArray[index]['slots']),
+                                      slotsMap: slotsHistoryPerDay,
+                                      apiData: apiHistoryData,
+                                      filters: {
+                                        "eighteenPlus": eighteenPlus,
+                                        "fortyfivePlus": fortyfivePlus,
+                                        "covaxin": covaxin,
+                                        "covishield": covishield,
+                                        "dose1": dose1,
+                                        "dose2": dose2
+                                      },
+                                    );
+                                  },
+                                  itemCount: slotsHistoryArray.length),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          Text(
+                            "Slot Availability",
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xff323F4B)),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          noHistory
+                              ? NoSlots(false)
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return SlotsPerDayCard(
+                                      slotsArray[index]['date'],
+                                      (slotsArray[index]['slots']).round(),
+                                      slotsMap: slotsPerDay,
+                                      apiData: apiData,
+                                      filters: {
+                                        "eighteenPlus": eighteenPlus,
+                                        "fortyfivePlus": fortyfivePlus,
+                                        "covaxin": covaxin,
+                                        "covishield": covishield,
+                                        "dose1": dose1,
+                                        "dose2": dose2
+                                      },
+                                    );
+                                  },
+                                  itemCount: slotsArray.length),
+                        ],
+                      ),
+                SizedBox(
+                  height: 56,
                 )
               ],
             ),
           ),
-        ));
+        ],
+      ),
+    );
   }
 }
 
@@ -350,61 +422,136 @@ class SlotsPerDayCard extends StatefulWidget {
 class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (widget.slots > 0) {
-          Navigator.push(
-              context,
-              PageTransition(
-                  child: CentersAvailableSlots(
-                    selectedDate: widget.date,
-                    dates: widget.slotsMap,
-                    apiData: widget.apiData,
-                    filters: widget.filters,
-                  ),
-                  type: PageTransitionType.bottomToTop,
-                  duration: Duration(milliseconds: 250),
-                  reverseDuration: Duration(milliseconds: 250)));
-        }
-      },
-      child: Container(
-          height: 65,
-          width: MediaQuery.of(context).size.width - 54,
-          margin: EdgeInsets.symmetric(vertical: 5),
-          child: Row(
-            children: [
-              Container(
-                  child: Text(
-                DateFormat("MMMM dd, EEEE").format(DateTime.parse(
-                    "${widget.date.substring(6)}-${widget.date.substring(3, 5)}-${widget.date.substring(0, 2)} 14:04:24.367573")),
-                style: TextStyle(
-                    color: widget.slots == 0
-                        ? Color(0xff7B8794)
-                        : Color(0xff3E4C59),
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18),
-              )),
-              Expanded(child: Container()),
-              Container(
-                padding: EdgeInsets.only(right: 12),
+    return Container(
+        height: 65,
+        width: MediaQuery.of(context).size.width - 54,
+        margin: EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          children: [
+            Container(
                 child: Text(
-                    "${widget.slots} ${widget.slots == 1 ? "Slot" : "Slots"}",
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: widget.slots == 0
-                            ? Color(0xff7B8794)
-                            : widget.slots > 10
-                                ? Color(0xff399709)
-                                : Color(0xffDE911D))),
-              ),
-              /* Icon(Icons.chevron_right,
-                  size: 28,
-                  color: widget.slots == 0
-                      ? Color(0xff7B8794)
-                      : Color(0xff616E7C)), */
-            ],
-          )),
+              DateFormat("MMMM dd, EEEE").format(DateTime.parse(
+                  "${widget.date.substring(6)}-${widget.date.substring(3, 5)}-${widget.date.substring(0, 2)} 14:04:24.367573")),
+              style: TextStyle(
+                  color:
+                      widget.slots == 0 ? Color(0xff7B8794) : Color(0xff3E4C59),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18),
+            )),
+            Expanded(child: Container()),
+            Container(
+              padding: EdgeInsets.only(right: 12),
+              child: Text(
+                  "${widget.slots} ${widget.slots == 1 ? "Slot" : "Slots"}",
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: widget.slots == 0
+                          ? Color(0xff7B8794)
+                          : widget.slots > 10
+                              ? Color(0xff399709)
+                              : Color(0xffDE911D))),
+            ),
+            /* Icon(Icons.chevron_right,
+                size: 28,
+                color: widget.slots == 0
+                    ? Color(0xff7B8794)
+                    : Color(0xff616E7C)), */
+          ],
+        ));
+  }
+}
+
+class SlotsHistoryCard extends StatefulWidget {
+  final String date;
+  final String slots;
+  final Map<dynamic, dynamic> slotsMap;
+  final Map<dynamic, dynamic> apiData;
+  final Map<String, bool> filters;
+  final String place;
+  SlotsHistoryCard(this.date, this.slots,
+      {this.slotsMap, this.apiData, this.place, this.filters});
+
+  @override
+  _SlotsHistoryCardState createState() => _SlotsHistoryCardState();
+}
+
+class _SlotsHistoryCardState extends State<SlotsHistoryCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        height: 65,
+        width: MediaQuery.of(context).size.width - 54,
+        child: Row(
+          children: [
+            Container(
+                margin: EdgeInsets.symmetric(vertical: 5),
+                child: Text(
+                  "${widget.date}".replaceAll("-", " "),
+                  style: TextStyle(
+                      color: widget.slots == "Closed"
+                          ? Color(0xff7B8794)
+                          : Color(0xff3E4C59),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18),
+                )),
+            Expanded(child: Container()),
+            Container(
+              padding: EdgeInsets.only(right: 12),
+              child: Text("${widget.slots}",
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: widget.slots == "Closed"
+                          ? Color(0xff7B8794)
+                          : Color(0xff399709))),
+            ),
+            /* Icon(Icons.chevron_right,
+                size: 28,
+                color: widget.slots == 0
+                    ? Color(0xff7B8794)
+                    : Color(0xff616E7C)), */
+          ],
+        ));
+    /* DateFormat("MMMM dd, EEEE").format(DateTime.parse(
+                    "${widget.date.substring(6)}-${widget.date.substring(3, 5)}-${widget.date.substring(0, 2)} 14:04:24.367573") */
+  }
+}
+
+class NoSlots extends StatefulWidget {
+  final bool isHistory;
+  NoSlots(this.isHistory);
+
+  @override
+  NoSlotsState createState() => NoSlotsState();
+}
+
+class NoSlotsState extends State<NoSlots> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(children: [
+        SizedBox(
+          height: 20,
+        ),
+        Container(
+            width: MediaQuery.of(context).size.width / 4,
+            height: MediaQuery.of(context).size.width / 4,
+            child: Image.asset(
+              "assets/empty_box_lg.png",
+              fit: BoxFit.contain,
+            )),
+        Container(
+            margin: EdgeInsets.only(top: 10),
+            child: Text(
+              widget.isHistory ? "No Data Available" : "No Slots Available",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: Color(0xff323F4B)),
+            )),
+      ]),
     );
   }
 }
