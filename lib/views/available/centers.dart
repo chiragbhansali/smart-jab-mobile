@@ -199,7 +199,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                   ),
                   Expanded(child: Container()),
                   Text(
-                    DateFormat("MMMM dd, EEEE").format(DateTime.parse(
+                    DateFormat("MMM dd, E").format(DateTime.parse(
                         "${selectedDate.substring(6)}-${selectedDate.substring(3, 5)}-${selectedDate.substring(0, 2)} 14:04:24.367573")),
                     style: TextStyle(
                         color: Color(0xff323F4B),
@@ -402,7 +402,12 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                   itemCount: centersList.length,
                   itemBuilder: (context, index) {
                     //print(centersList);
-                    return CenterCard(centersList[index], widget.selectedDate);
+                    return CenterCard(
+                        ValueKey("$fortyfivePlus$eighteenPlus"),
+                        centersList[index],
+                        widget.selectedDate,
+                        eighteenPlus,
+                        fortyfivePlus);
                   },
                 ),
               ),
@@ -417,12 +422,47 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
 class CenterCard extends StatefulWidget {
   final Map<dynamic, dynamic> center;
   final String selectedDate;
-  CenterCard(this.center, this.selectedDate);
+  final bool eighteen;
+  final bool fortyfive;
+  CenterCard(
+      Key key, this.center, this.selectedDate, this.eighteen, this.fortyfive)
+      : super(key: key);
   @override
   _CenterCardState createState() => _CenterCardState();
 }
 
 class _CenterCardState extends State<CenterCard> {
+  List ages = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.center['min_age'].length > 1) {
+      if (widget.eighteen && widget.fortyfive) {
+        setState(() {
+          ages = widget.center['min_age'];
+        });
+      } else if (!widget.eighteen && !widget.fortyfive) {
+        setState(() {
+          ages = widget.center['min_age'];
+        });
+      } else if (widget.eighteen && !widget.fortyfive) {
+        setState(() {
+          ages = ['18'];
+        });
+      } else if (!widget.eighteen && widget.fortyfive) {
+        setState(() {
+          ages = ['45'];
+        });
+      }
+    } else {
+      setState(() {
+        ages = widget.center['min_age'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -449,6 +489,38 @@ class _CenterCardState extends State<CenterCard> {
                       ),
                       Column(
                         children: [
+                          ListTile(
+                            onTap: () async {
+                              Navigator.push(
+                                  context,
+                                  PageTransition(
+                                      child: HospitalScreen(
+                                          centerId:
+                                              "${widget.center['center_id']}",
+                                          name: "${widget.center['name']}",
+                                          address:
+                                              "${widget.center['mapsAddress']}, ${widget.center['address']}",
+                                          age: widget.center['min_age'],
+                                          vaccine:
+                                              "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
+                                          selectedDate: widget.selectedDate,
+                                          lat: widget.center['lat'],
+                                          long: widget.center['long']),
+                                      type: PageTransitionType.bottomToTop,
+                                      duration: Duration(milliseconds: 250),
+                                      reverseDuration:
+                                          Duration(milliseconds: 250)));
+                            },
+                            leading: Icon(Icons.info_outlined,
+                                color: Color(0xff616E7C), size: 28),
+                            title: Text(
+                              "View Details",
+                              style: TextStyle(
+                                  color: Color(0xff323F4B),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ),
                           ListTile(
                             onTap: () async {
                               const platform = const MethodChannel(
@@ -493,38 +565,6 @@ class _CenterCardState extends State<CenterCard> {
                                   fontWeight: FontWeight.w500),
                             ),
                           ),
-                          ListTile(
-                            onTap: () async {
-                              Navigator.push(
-                                  context,
-                                  PageTransition(
-                                      child: HospitalScreen(
-                                          centerId:
-                                              "${widget.center['center_id']}",
-                                          name: "${widget.center['name']}",
-                                          address:
-                                              "${widget.center['mapsAddress']}, ${widget.center['address']}",
-                                          age: widget.center['min_age'],
-                                          vaccine:
-                                              "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
-                                          selectedDate: widget.selectedDate,
-                                          lat: widget.center['lat'],
-                                          long: widget.center['long']),
-                                      type: PageTransitionType.bottomToTop,
-                                      duration: Duration(milliseconds: 250),
-                                      reverseDuration:
-                                          Duration(milliseconds: 250)));
-                            },
-                            leading: Icon(Icons.info_outlined,
-                                color: Color(0xff616E7C), size: 28),
-                            title: Text(
-                              "View Details",
-                              style: TextStyle(
-                                  color: Color(0xff323F4B),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ),
                         ],
                       ),
                       SizedBox(height: 20)
@@ -535,7 +575,7 @@ class _CenterCardState extends State<CenterCard> {
             });
       },
       child: Container(
-          height: 170,
+          height: 180,
           width: MediaQuery.of(context).size.width - 54,
           margin: EdgeInsets.only(left: 22, right: 22, top: 10, bottom: 10),
           decoration: BoxDecoration(
@@ -596,11 +636,12 @@ class _CenterCardState extends State<CenterCard> {
               Expanded(child: Container()),
               Container(
                 width: MediaQuery.of(context).size.width - 48,
+                // height: 70,
                 padding: EdgeInsets.only(bottom: 24, left: 24, right: 24),
                 child: Row(
                   children: [
                     Row(
-                        children: widget.center['min_age']
+                        children: ages
                             .map<Widget>(
                               (a) => Container(
                                 margin: EdgeInsets.only(right: 8),
@@ -613,12 +654,16 @@ class _CenterCardState extends State<CenterCard> {
                             )
                             .toList()),
                     Expanded(child: Container()),
-                    Text(
-                        "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
-                        style: TextStyle(
-                            color: Color(0xff616E7C),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16))
+                    Row(
+                      children: [
+                        Text(
+                            "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
+                            style: TextStyle(
+                                color: Color(0xff616E7C),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16)),
+                      ],
+                    )
                   ],
                 ),
               )

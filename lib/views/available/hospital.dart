@@ -1,12 +1,25 @@
 import 'dart:convert';
-import 'package:flutter/services.dart';
-import "package:http/http.dart" as http;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import "package:http/http.dart" as http;
 import 'package:intl/intl.dart';
-import 'package:page_transition/page_transition.dart';
 
-import 'centers.dart';
+List months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec"
+];
 
 class HospitalScreen extends StatefulWidget {
   final String centerId;
@@ -241,87 +254,86 @@ class _HospitalScreenState extends State<HospitalScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.only(left: 23, right: 23),
+      body: (loading | historyLoading)
+          ? Container(child: Center(child: CircularProgressIndicator()))
+          : Column(
               children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Text(
-                  "Address",
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                      color: Color(0xff323F4B),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600),
-                ),
-                SizedBox(
-                  height: 12,
-                ),
-                Text("$addressFinal",
-                    style: TextStyle(
-                        height: 1.5,
-                        color: Color(0xff3E4C59),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500)),
-                SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline_outlined,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Wrap(
-                      spacing: 4,
-                      children: widget.age
-                          .map<Widget>(
-                            (a) => Container(
-                              child: Text("$a+",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xff3E4C59))),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    Expanded(
-                      child: Container(),
-                    ),
-                    Icon(
-                      Icons.medication_outlined,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Text(
-                      "${widget.vaccine}",
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xff3E4C59)),
-                    ),
-                    Expanded(
-                      child: Container(),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 50,
-                ),
-                (loading | historyLoading)
-                    ? Container(
-                        child: Center(child: CircularProgressIndicator()))
-                    : Column(
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.only(left: 27, right: 27),
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        "Address",
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                            color: Color(0xff323F4B),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      SizedBox(
+                        height: 12,
+                      ),
+                      Text("$addressFinal",
+                          style: TextStyle(
+                              height: 1.5,
+                              color: Color(0xff3E4C59),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500)),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.person_outline_outlined,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Wrap(
+                            spacing: 4,
+                            children: widget.age
+                                .map<Widget>(
+                                  (a) => Container(
+                                    child: Text("$a+",
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff3E4C59))),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          Expanded(
+                            child: Container(),
+                          ),
+                          Icon(
+                            Icons.medication_outlined,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Text(
+                            "${widget.vaccine}",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xff3E4C59)),
+                          ),
+                          Expanded(
+                            child: Container(),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 50,
+                      ),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -335,7 +347,7 @@ class _HospitalScreenState extends State<HospitalScreen> {
                             height: 10,
                           ),
                           noHistory
-                              ? NoSlots(true)
+                              ? NoData()
                               : ListView.builder(
                                   shrinkWrap: true,
                                   physics: NeverScrollableScrollPhysics(),
@@ -393,14 +405,14 @@ class _HospitalScreenState extends State<HospitalScreen> {
                                   itemCount: slotsArray.length),
                         ],
                       ),
-                SizedBox(
-                  height: 56,
-                )
+                      SizedBox(
+                        height: 56,
+                      )
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -421,16 +433,21 @@ class SlotsPerDayCard extends StatefulWidget {
 
 class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
         height: 65,
         width: MediaQuery.of(context).size.width - 54,
-        margin: EdgeInsets.symmetric(vertical: 5),
+        margin: EdgeInsets.symmetric(vertical: 0),
         child: Row(
           children: [
             Container(
                 child: Text(
-              DateFormat("MMMM dd, EEEE").format(DateTime.parse(
+              DateFormat("MMM dd, E").format(DateTime.parse(
                   "${widget.date.substring(6)}-${widget.date.substring(3, 5)}-${widget.date.substring(0, 2)} 14:04:24.367573")),
               style: TextStyle(
                   color:
@@ -477,6 +494,15 @@ class SlotsHistoryCard extends StatefulWidget {
 }
 
 class _SlotsHistoryCardState extends State<SlotsHistoryCard> {
+  String date;
+  @override
+  void initState() {
+    super.initState();
+    date = widget.date.replaceAll("-", " ");
+    print("hi" +
+        "2021-${(months.indexOf(date.substring(date.length - 3)) + 1).toString().length == 1 ? "0" + (months.indexOf(date.substring(date.length - 3)) + 1).toString() : (months.indexOf(date.substring(date.length - 3)) + 1).toString()}-${(date.substring(0, date.length - 3))} 14:04:24.367573");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -485,9 +511,10 @@ class _SlotsHistoryCardState extends State<SlotsHistoryCard> {
         child: Row(
           children: [
             Container(
-                margin: EdgeInsets.symmetric(vertical: 5),
+                margin: EdgeInsets.symmetric(vertical: 0),
                 child: Text(
-                  "${widget.date}".replaceAll("-", " "),
+                  // "2021-${}-${int.parse(date.substring(0, date.length - 3))} 14:04:24.367573"
+                  "${DateFormat("MMM dd, E").format(DateTime.parse('2021-${(months.indexOf(date.substring(date.length - 3)) + 1).toString().length == 1 ? "0" + (months.indexOf(date.substring(date.length - 3)) + 1).toString() : (months.indexOf(date.substring(date.length - 3)) + 1).toString()}-${date.substring(0, date.length - 4)} 00:00:00.000'))}",
                   style: TextStyle(
                       color: widget.slots == "Closed"
                           ? Color(0xff7B8794)
@@ -518,6 +545,31 @@ class _SlotsHistoryCardState extends State<SlotsHistoryCard> {
   }
 }
 
+class NoData extends StatefulWidget {
+  const NoData({Key key}) : super(key: key);
+
+  @override
+  _NoDataState createState() => _NoDataState();
+}
+
+class _NoDataState extends State<NoData> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 65,
+      width: MediaQuery.of(context).size.width - 54,
+      decoration: BoxDecoration(
+          color: Color(0xffFFF3C4), borderRadius: BorderRadius.circular(8)),
+      margin: EdgeInsets.only(top: 20),
+      child: Center(
+          child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Text("Slots Opening History Not available for 45+ slots"),
+      )),
+    );
+  }
+}
+
 class NoSlots extends StatefulWidget {
   final bool isHistory;
   NoSlots(this.isHistory);
@@ -530,6 +582,7 @@ class NoSlotsState extends State<NoSlots> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: MediaQuery.of(context).size.width,
       child: Column(children: [
         SizedBox(
           height: 20,

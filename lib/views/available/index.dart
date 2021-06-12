@@ -882,10 +882,7 @@ class _NoSlotsState extends State<NoSlots> {
                     ],
                   );
                 });
-
-            if (result == true) {
-              Navigator.pop(context);
-            }
+            Navigator.pop(context, result);
           },
           child: Container(
             width: MediaQuery.of(context).size.width - 54,
@@ -948,13 +945,13 @@ class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
       child: Container(
           height: 65,
           width: MediaQuery.of(context).size.width - 54,
-          margin: EdgeInsets.symmetric(vertical: 5),
+          margin: EdgeInsets.symmetric(vertical: 0),
           child: Row(
             children: [
               Container(
                   padding: EdgeInsets.only(left: 4),
                   child: Text(
-                    DateFormat("MMMM dd, EEEE").format(DateTime.parse(
+                    DateFormat("MMM dd, E").format(DateTime.parse(
                         "${widget.date.substring(6)}-${widget.date.substring(3, 5)}-${widget.date.substring(0, 2)} 14:04:24.367573")),
                     style: TextStyle(
                         color: widget.slots == 0
@@ -965,7 +962,7 @@ class _SlotsPerDayCardState extends State<SlotsPerDayCard> {
                   )),
               Expanded(child: Container()),
               Container(
-                padding: EdgeInsets.only(right: 24),
+                padding: EdgeInsets.only(right: 22),
                 child: Text(
                     "${widget.slots} ${widget.slots == 1 ? "Slot" : "Slots"}",
                     style: TextStyle(

@@ -11,6 +11,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:vaccine_slot_notifier/LocalStorage.dart';
 import 'package:vaccine_slot_notifier/data/districts.dart';
 import 'package:vaccine_slot_notifier/views/available/index.dart';
+import 'package:vaccine_slot_notifier/widgets/batteryDialog.dart';
 import 'package:vaccine_slot_notifier/widgets/dropdown.dart';
 
 class HomeTab extends StatefulWidget {
@@ -401,7 +402,7 @@ class _PincodeTabState extends State<PincodeTab> {
               if (isValid) {
                 await storage.setItem("pincode", pincode);
                 await storage.setItem("radius", radius);
-                Navigator.push(
+                var result = await Navigator.push(
                     context,
                     PageTransition(
                         child: AvailableDaysSlots(
@@ -411,6 +412,21 @@ class _PincodeTabState extends State<PincodeTab> {
                         type: PageTransitionType.bottomToTop,
                         duration: Duration(milliseconds: 250),
                         reverseDuration: Duration(milliseconds: 250)));
+                print("HELLO" + result.toString());
+                if (result == true) {
+                  const platform = const MethodChannel(
+                    'com.arnav.smartjab/flutter',
+                  );
+                  var result2 = await platform.invokeMethod("isShowPopup");
+                  if (result2 == true) {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) {
+                          return BatteryDialog();
+                        });
+                  }
+                }
               }
             },
             child: Container(
@@ -700,7 +716,7 @@ class _DistrictsTabState extends State<DistrictsTab> {
             onTap: () async {
               await storage.setItem("stateId", _chosenStateId);
               await storage.setItem("districtId", _chosenDistrictId);
-              Navigator.push(
+              var result = await Navigator.push(
                   context,
                   PageTransition(
                       child: AvailableDaysSlots(
@@ -711,6 +727,21 @@ class _DistrictsTabState extends State<DistrictsTab> {
                       type: PageTransitionType.bottomToTop,
                       duration: Duration(milliseconds: 250),
                       reverseDuration: Duration(milliseconds: 250)));
+
+              if (result == true) {
+                const platform = const MethodChannel(
+                  'com.arnav.smartjab/flutter',
+                );
+                var result2 = await platform.invokeMethod("isShowPopup");
+                if (result2 == true) {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return BatteryDialog();
+                      });
+                }
+              }
             },
             child: Container(
               width: MediaQuery.of(context).size.width - 54,

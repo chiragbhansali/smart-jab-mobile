@@ -12,6 +12,7 @@ import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.lang.reflect.Method
 import java.util.concurrent.TimeUnit
 
 
@@ -20,10 +21,11 @@ class MainActivity : FlutterActivity() {
     private var ALARM_CHECK_WORKER = "ALARM_CHECK_WORKER"
     private val CHANNEL = "com.arnav.smartjab/flutter"
     private val RINGTONE = 1
+    private lateinit var channel: MethodChannel
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "openMaps" -> {
@@ -47,22 +49,22 @@ class MainActivity : FlutterActivity() {
                         commit()
                     }
                     // get ringtone
-                    val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(
-                        applicationContext.getDatabasePath("alarms.db").absolutePath,
-                        null
-                    )
-                    val resultSet: Cursor = db.rawQuery("select * from Alarm", null)
-                    resultSet.moveToPosition(sharedPrefs.getInt("alarmId", 1) - 1)
-                    val ringtone = resultSet.getString(13)
-                    val currentRingtone = Uri.parse(if (ringtone != "default") ringtone else defaultRingtoneUri.toString())
-                    resultSet.close()
-                    db.close()
+//                    val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(
+//                        applicationContext.getDatabasePath("alarms.db").absolutePath,
+//                        null
+//                    )
+//                    val resultSet: Cursor = db.rawQuery("select * from Alarm", null)
+//                    resultSet.moveToPosition(sharedPrefs.getInt("alarmId", 1) - 1)
+//                    val ringtone = resultSet.getString(13)
+//                    val currentRingtone = Uri.parse(if (ringtone != "default") ringtone else defaultRingtoneUri.toString())
+//                    resultSet.close()
+//                    db.close()
                     // set ringtone type as alarm
                     chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
                     // set default ringtone
-                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, defaultRingtoneUri)
+//                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, defaultRingtoneUri)
                     // set selected ringtone
-                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone)
+//                    chooseIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone)
                     startActivityForResult(chooseIntent, RINGTONE)
                     result.success("")
                 }
@@ -74,6 +76,24 @@ class MainActivity : FlutterActivity() {
                 }
                 "openCowin" -> {
                     val url = Uri.parse("https://selfregistration.cowin.gov.in/")
+                    val cowinIntent = Intent(Intent.ACTION_VIEW, url)
+                    startActivity(cowinIntent)
+                    result.success("")
+                }
+                "isShowPopup" -> {
+                    val manufacturer = android.os.Build.MANUFACTURER
+                    val allowed = arrayOf("samsung", "xiaomi", "oppo", "vivo", "oneplus", "realme")
+
+                    if(manufacturer.toLowerCase() in allowed){
+                        result.success(true)
+                    }else{
+                        result.success(false)
+                    }
+                }
+                "openDontKillMyApp" -> {
+                    val manufacturer = android.os.Build.MANUFACTURER
+
+                    val url = Uri.parse("https://dontkillmyapp.com/${manufacturer.toLowerCase()}")
                     val cowinIntent = Intent(Intent.ACTION_VIEW, url)
                     startActivity(cowinIntent)
                     result.success("")
@@ -139,10 +159,9 @@ class MainActivity : FlutterActivity() {
                 cv.put("ringtoneUri", ringtoneUri.toString())
                 cv.put("ringtoneName", ringtoneName)
 
-
-
                 db.update("Alarm", cv, "id = ?", arrayOf(sharedPrefs.getInt("alarmId", 1).toString()))
 //            Log.d("ringtone path", ringtone.toString())
+                channel.invokeMethod("fetchAlarms", "")
                 with(sharedPrefs.edit()) {
                     remove("alarmId")
                     commit()

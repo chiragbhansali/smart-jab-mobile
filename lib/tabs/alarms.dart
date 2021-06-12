@@ -38,11 +38,29 @@ class _AlarmsTabState extends State<AlarmsTab> {
     });
   }
 
+  Future<dynamic> _platformCallHandler(MethodCall call) async {
+    switch (call.method) {
+      case 'fetchAlarms':
+        await getAlarms();
+        return Future.value('called from platform!');
+      //return Future.error('error message!!');
+      default:
+        print('Unknowm method ${call.method}');
+        throw MissingPluginException();
+        break;
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getAlarms();
+    const platform = const MethodChannel(
+      'com.arnav.smartjab/flutter',
+    );
+
+    platform.setMethodCallHandler(_platformCallHandler);
   }
 
   @override
@@ -64,11 +82,12 @@ class _AlarmsTabState extends State<AlarmsTab> {
           : alarms.length == 0
               ? NoAlarms()
               : Container(
-                  margin: EdgeInsets.only(top: 30),
+                  color: Colors.white,
+                  padding: EdgeInsets.only(top: 30),
                   child: ListView.builder(
                       itemCount: alarms.length,
                       itemBuilder: (context, index) {
-                        return AlarmCard(new ValueKey(alarms[index].id),
+                        return AlarmCard(new ValueKey(alarms[index]),
                             alarms[index], getAlarms);
                       })),
     );
@@ -149,7 +168,6 @@ class _AlarmCardState extends State<AlarmCard> {
     super.initState();
     setRingtoneName(widget.alarm.ringtoneName);
     alarm = widget.alarm;
-    print(widget.alarm.toMap());
   }
 
   @override

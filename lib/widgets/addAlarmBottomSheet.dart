@@ -468,7 +468,12 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                           ),
                         ),
                       ));
-                      Navigator.pop(context, true);
+                      var alarmsNew = await DatabaseProvider.db.getAlarms();
+                      if (alarmsNew.length == 1) {
+                        Navigator.pop(context, true);
+                      } else {
+                        Navigator.pop(context, false);
+                      }
                     }
                   }
                 : () {},
