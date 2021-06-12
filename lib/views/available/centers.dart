@@ -90,6 +90,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       center['long'] = c['long'];
       center['fee'] = c['fee_type'];
       center['min_age'] = [];
+      center['vaccine'] = [];
       center['sessions'] = c['sessions'];
 
       bool sessionNotFound = true;
@@ -97,7 +98,9 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       for (var session in c['sessions']) {
         if (session['date'] == date) {
           sessionNotFound = false;
-          center['vaccine'] = session['vaccine'];
+          if (!center['vaccine'].contains(session['vaccine'])) {
+            center['vaccine'].add(session['vaccine']);
+          }
           center['slots'] = center['slots'] == null
               ? getSlots(session)
               : center['slots'] + getSlots(session);
@@ -110,11 +113,11 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       if (sessionNotFound) {
         var session = c['sessions'].isEmpty ? null : c['sessions'][0];
         if (session != null) {
-          center['vaccine'] = session['vaccine'];
+          center['vaccine'].add(session['vaccine']);
           center['slots'] = 0;
           center['min_age'].add(session['min_age_limit']);
         } else {
-          center['vaccine'] = "Not Known";
+          center['vaccine'].add("Not Known");
           center['slots'] = 0;
           center['min_age'].add(18);
         }
@@ -640,7 +643,7 @@ class _CenterCardState extends State<CenterCard> {
                 width: MediaQuery.of(context).size.width - 48,
                 // height: 70,
                 padding: EdgeInsets.only(bottom: 24, left: 24, right: 24),
-                child: Row(
+                child: Wrap(
                   children: [
                     Row(
                         children: ages
@@ -655,16 +658,22 @@ class _CenterCardState extends State<CenterCard> {
                               ),
                             )
                             .toList()),
-                    Expanded(child: Container()),
-                    Row(
-                      children: [
-                        Text(
-                            "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
-                            style: TextStyle(
-                                color: Color(0xff616E7C),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16)),
-                      ],
+                    // Expanded(child: Container()),
+                    // SizedBox(height: 20),
+                    Wrap(
+                      children: widget.center['vaccine']
+                          .map<Widget>(
+                            (vaccine) => Container(
+                              margin: EdgeInsets.only(right: 8),
+                              child: Text(
+                                  "${vaccine[0]}${vaccine.substring(1).toLowerCase()}(${widget.center['fee']})",
+                                  style: TextStyle(
+                                      color: Color(0xff616E7C),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16)),
+                            ),
+                          )
+                          .toList(),
                     )
                   ],
                 ),
