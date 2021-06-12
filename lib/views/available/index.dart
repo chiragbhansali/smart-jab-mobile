@@ -641,8 +641,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                       ),
                     ),
               Container(
-                height: 50,
+                height: 58,
                 margin: EdgeInsets.only(top: 20),
+                padding: EdgeInsets.only(bottom: 8),
                 width: MediaQuery.of(context).size.width - 54,
                 child: Scrollbar(
                   thickness: 2,
@@ -720,7 +721,7 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                             filterSlots();
                           },
                           labelPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                           disabledColor: Color(0xffE3EFFF),
                           backgroundColor: Color(0xffE3EFFF),
                           selectedColor: Color(0xff0A6CFF),

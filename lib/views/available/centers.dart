@@ -250,11 +250,12 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
               ),
             ),
             Container(
-              height: 50,
+              height: 58,
               margin: EdgeInsets.only(
                 top: 0,
                 bottom: 20,
               ),
+              padding: EdgeInsets.only(bottom: 8),
               width: MediaQuery.of(context).size.width - 54,
               child: Scrollbar(
                 thickness: 2,
@@ -267,8 +268,9 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                       child: FilterChip(
                         label: Text("Dose 1",
                             style: TextStyle(
-                              color:
-                                  !dose1 ? Color(0xff0A6CFF) : Color(0xffffffff),
+                              color: !dose1
+                                  ? Color(0xff0A6CFF)
+                                  : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
                               fontSize: 15,
                             )),
@@ -292,8 +294,9 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
                       child: FilterChip(
                         label: Text("Dose 2",
                             style: TextStyle(
-                              color:
-                                  !dose2 ? Color(0xff0A6CFF) : Color(0xffffffff),
+                              color: !dose2
+                                  ? Color(0xff0A6CFF)
+                                  : Color(0xffffffff),
                               fontWeight: FontWeight.w500,
                               fontSize: 15,
                             )),
@@ -714,7 +717,7 @@ class _CenterCardState extends State<CenterCard> {
                 width: MediaQuery.of(context).size.width - 48,
                 // height: 70,
                 padding: EdgeInsets.only(bottom: 24, left: 24, right: 24),
-                child: Wrap(
+                child: Row(
                   children: [
                     Row(
                         children: ages
@@ -729,23 +732,14 @@ class _CenterCardState extends State<CenterCard> {
                               ),
                             )
                             .toList()),
-                    // Expanded(child: Container()),
+                    Expanded(child: Container()),
                     // SizedBox(height: 20),
-                    Wrap(
-                      children: widget.center['vaccine']
-                          .map<Widget>(
-                            (vaccine) => Container(
-                              margin: EdgeInsets.only(right: 8),
-                              child: Text(
-                                  "${vaccine[0]}${vaccine.substring(1).toLowerCase()}(${widget.center['fee']})",
-                                  style: TextStyle(
-                                      color: Color(0xff616E7C),
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16)),
-                            ),
-                          )
-                          .toList(),
-                    )
+                    Text(
+                        "${widget.center['vaccine'][0][0]}${widget.center['vaccine'][0].substring(1).toLowerCase()}(${widget.center['fee']})",
+                        style: TextStyle(
+                            color: Color(0xff616E7C),
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16)),
                   ],
                 ),
               )
