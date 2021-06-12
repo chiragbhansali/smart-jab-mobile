@@ -35,6 +35,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
   bool covaxin = false;
   bool dose1 = false;
   bool dose2 = false;
+  bool paid = false;
+  bool free = false;
 
   bool loading = true;
   bool noSlots = false;
@@ -83,6 +85,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         dose2 = false;
         loading = true;
         covishield = false;
+        paid = false;
+        free = false;
       });
       var date = DateTime.now();
       var formattedDate = DateFormat('dd-MM-yyyy').format(date);
@@ -173,6 +177,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         covaxin = false;
         covishield = false;
         loading = true;
+        paid = false;
+        free = false;
       });
 
       var res = await http
@@ -306,6 +312,17 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
         if (fortyfivePlus && !eighteenPlus) {
           if (session['min_age_limit'] == 18) {
             continue;
+          }
+        }
+        if (free && !paid) {
+          if (center['fee_type'] == "Paid") {
+            return 0;
+          }
+        }
+
+        if (paid && !free) {
+          if (center['fee_type'] == "Free") {
+            return 0;
           }
         }
 
@@ -627,166 +644,222 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                 height: 50,
                 margin: EdgeInsets.only(top: 20),
                 width: MediaQuery.of(context).size.width - 54,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(4),
-                      child: FilterChip(
-                        label: Text("Dose 1",
-                            style: TextStyle(
-                              color: !dose1
-                                  ? Color(0xff0A6CFF)
-                                  : Color(0xffffffff),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            )),
-                        onSelected: (i) {
-                          setState(() {
-                            dose1 = i;
-                          });
-                          filterSlots();
-                        },
-                        labelPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        disabledColor: Color(0xffE3EFFF),
-                        backgroundColor: Color(0xffE3EFFF),
-                        selectedColor: Color(0xff0A6CFF),
-                        selected: dose1,
-                        checkmarkColor: Colors.white,
+                child: Scrollbar(
+                  thickness: 2,
+                  isAlwaysShown: true,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(4),
+                        child: FilterChip(
+                          label: Text("Dose 1",
+                              style: TextStyle(
+                                color: !dose1
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              dose1 = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: dose1,
+                          checkmarkColor: Colors.white,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(4),
-                      child: FilterChip(
-                        label: Text("Dose 2",
-                            style: TextStyle(
-                              color: !dose2
-                                  ? Color(0xff0A6CFF)
-                                  : Color(0xffffffff),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            )),
-                        onSelected: (i) {
-                          setState(() {
-                            dose2 = i;
-                          });
-                          filterSlots();
-                        },
-                        labelPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        disabledColor: Color(0xffE3EFFF),
-                        backgroundColor: Color(0xffE3EFFF),
-                        selectedColor: Color(0xff0A6CFF),
-                        selected: dose2,
-                        checkmarkColor: Colors.white,
+                      Padding(
+                        padding: EdgeInsets.all(4),
+                        child: FilterChip(
+                          label: Text("Dose 2",
+                              style: TextStyle(
+                                color: !dose2
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              dose2 = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: dose2,
+                          checkmarkColor: Colors.white,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(4),
-                      child: FilterChip(
-                        label: Text("18+",
-                            style: TextStyle(
-                              color: !eighteenPlus
-                                  ? Color(0xff0A6CFF)
-                                  : Color(0xffffffff),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            )),
-                        onSelected: (i) {
-                          setState(() {
-                            eighteenPlus = i;
-                          });
-                          filterSlots();
-                        },
-                        labelPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        disabledColor: Color(0xffE3EFFF),
-                        backgroundColor: Color(0xffE3EFFF),
-                        selectedColor: Color(0xff0A6CFF),
-                        selected: eighteenPlus,
-                        checkmarkColor: Colors.white,
+                      Padding(
+                        padding: EdgeInsets.all(4),
+                        child: FilterChip(
+                          label: Text("Paid",
+                              style: TextStyle(
+                                color: !paid
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              paid = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: paid,
+                          checkmarkColor: Colors.white,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: FilterChip(
-                        label: Text("45+",
-                            style: TextStyle(
-                              color: !fortyfivePlus
-                                  ? Color(0xff0A6CFF)
-                                  : Color(0xffffffff),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            )),
-                        onSelected: (i) {
-                          setState(() {
-                            fortyfivePlus = i;
-                          });
-                          filterSlots();
-                        },
-                        labelPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        disabledColor: Color(0xffE3EFFF),
-                        backgroundColor: Color(0xffE3EFFF),
-                        selectedColor: Color(0xff0A6CFF),
-                        selected: fortyfivePlus,
-                        checkmarkColor: Colors.white,
+                      Padding(
+                        padding: EdgeInsets.all(4),
+                        child: FilterChip(
+                          label: Text("Free",
+                              style: TextStyle(
+                                color: !free
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              free = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: free,
+                          checkmarkColor: Colors.white,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: FilterChip(
-                        label: Text("Covaxin",
-                            style: TextStyle(
-                              color: !covaxin
-                                  ? Color(0xff0A6CFF)
-                                  : Color(0xffffffff),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            )),
-                        onSelected: (i) {
-                          setState(() {
-                            covaxin = i;
-                          });
-                          filterSlots();
-                        },
-                        labelPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        disabledColor: Color(0xffE3EFFF),
-                        backgroundColor: Color(0xffE3EFFF),
-                        selectedColor: Color(0xff0A6CFF),
-                        selected: covaxin,
-                        checkmarkColor: Colors.white,
+                      Padding(
+                        padding: EdgeInsets.all(4),
+                        child: FilterChip(
+                          label: Text("18+",
+                              style: TextStyle(
+                                color: !eighteenPlus
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              eighteenPlus = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: eighteenPlus,
+                          checkmarkColor: Colors.white,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: FilterChip(
-                        label: Text("Covishield",
-                            style: TextStyle(
-                              color: !covishield
-                                  ? Color(0xff0A6CFF)
-                                  : Color(0xffffffff),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                            )),
-                        onSelected: (i) {
-                          setState(() {
-                            covishield = i;
-                          });
-                          filterSlots();
-                        },
-                        labelPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        disabledColor: Color(0xffE3EFFF),
-                        backgroundColor: Color(0xffE3EFFF),
-                        selectedColor: Color(0xff0A6CFF),
-                        selected: covishield,
-                        checkmarkColor: Colors.white,
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: FilterChip(
+                          label: Text("45+",
+                              style: TextStyle(
+                                color: !fortyfivePlus
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              fortyfivePlus = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: fortyfivePlus,
+                          checkmarkColor: Colors.white,
+                        ),
                       ),
-                    )
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: FilterChip(
+                          label: Text("Covaxin",
+                              style: TextStyle(
+                                color: !covaxin
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              covaxin = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: covaxin,
+                          checkmarkColor: Colors.white,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: FilterChip(
+                          label: Text("Covishield",
+                              style: TextStyle(
+                                color: !covishield
+                                    ? Color(0xff0A6CFF)
+                                    : Color(0xffffffff),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                              )),
+                          onSelected: (i) {
+                            setState(() {
+                              covishield = i;
+                            });
+                            filterSlots();
+                          },
+                          labelPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          disabledColor: Color(0xffE3EFFF),
+                          backgroundColor: Color(0xffE3EFFF),
+                          selectedColor: Color(0xff0A6CFF),
+                          selected: covishield,
+                          checkmarkColor: Colors.white,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
               Expanded(
@@ -805,6 +878,8 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                               covishield: covishield.toString(),
                               dose1: dose1.toString(),
                               dose2: dose2.toString(),
+                              free: free.toString(),
+                              paid: paid.toString(),
                               minAvailable: 1,
                               radius: radius == null
                                   ? null
@@ -825,7 +900,9 @@ class _AvailableDaysSlotsState extends State<AvailableDaysSlots> {
                                           "covaxin": covaxin,
                                           "covishield": covishield,
                                           "dose1": dose1,
-                                          "dose2": dose2
+                                          "dose2": dose2,
+                                          "paid": paid,
+                                          "free": free
                                         },
                                         place: pincode != null
                                             ? pincode

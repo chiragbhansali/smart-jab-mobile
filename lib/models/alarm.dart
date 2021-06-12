@@ -10,6 +10,8 @@ class Alarm {
   String covishield;
   String dose1;
   String dose2;
+  String paid;
+  String free;
   int minAvailable;
   int radius;
   String ringtoneUri;
@@ -28,6 +30,8 @@ class Alarm {
       this.covishield,
       this.dose1,
       this.dose2,
+      this.paid,
+      this.free,
       this.minAvailable,
       this.radius,
       this.ringtoneUri = 'default',
@@ -50,24 +54,29 @@ class Alarm {
         "dose2": dose2,
         "ringtoneUri": ringtoneUri,
         "ringtoneName": ringtoneName,
-        "vibrate": vibrate
+        "vibrate": vibrate,
+        "paid": paid,
+        "free": free,
       };
 
   factory Alarm.fromMap(Map<String, dynamic> json) => new Alarm(
-      id: json["id"],
-      pincode: json['pincode'],
-      districtId: json['districtId'],
-      districtName: json['districtName'],
-      isOn: json['isOn'],
-      eighteenPlus: json['eighteenPlus'],
-      fortyfivePlus: json['fortyfivePlus'],
-      covaxin: json['covaxin'],
-      covishield: json['covishield'],
-      dose1: json['dose1'],
-      dose2: json['dose2'],
-      minAvailable: json['minAvailable'],
-      radius: json['radius'],
-      ringtoneUri: json['ringtoneUri'],
-      ringtoneName: json['ringtoneName'],
-      vibrate: json['vibrate']);
+        id: json["id"],
+        pincode: json['pincode'],
+        districtId: json['districtId'],
+        districtName: json['districtName'],
+        isOn: json['isOn'],
+        eighteenPlus: json['eighteenPlus'],
+        fortyfivePlus: json['fortyfivePlus'],
+        covaxin: json['covaxin'],
+        covishield: json['covishield'],
+        dose1: json['dose1'],
+        dose2: json['dose2'],
+        minAvailable: json['minAvailable'],
+        radius: json['radius'],
+        ringtoneUri: json['ringtoneUri'],
+        ringtoneName: json['ringtoneName'],
+        vibrate: json['vibrate'],
+        paid: json['paid'],
+        free: json['free'],
+      );
 }

@@ -20,6 +20,8 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
   bool covaxin;
   bool dose1;
   bool dose2;
+  bool paid;
+  bool free;
 
   String minAvailable;
   String radius;
@@ -46,6 +48,9 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
     covaxin = toBool(widget.alarmData.covaxin);
     dose1 = toBool(widget.alarmData.dose1);
     dose2 = toBool(widget.alarmData.dose2);
+    // get paid and free booleans
+    paid = toBool(widget.alarmData.paid);
+    free = toBool(widget.alarmData.free);
     minAvailable = widget.alarmData.minAvailable.toString();
     radius = widget.alarmData.radius.toString();
     print(radius);
@@ -124,6 +129,52 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                     backgroundColor: Color(0xffE3EFFF),
                     selectedColor: Color(0xff0A6CFF),
                     selected: dose2,
+                    checkmarkColor: Colors.white,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4),
+                  child: FilterChip(
+                    label: Text("Paid",
+                        style: TextStyle(
+                          color: !paid ? Color(0xff0A6CFF) : Color(0xffffffff),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                        )),
+                    onSelected: (i) {
+                      setState(() {
+                        paid = i;
+                      });
+                    },
+                    labelPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    disabledColor: Color(0xffE3EFFF),
+                    backgroundColor: Color(0xffE3EFFF),
+                    selectedColor: Color(0xff0A6CFF),
+                    selected: paid,
+                    checkmarkColor: Colors.white,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4),
+                  child: FilterChip(
+                    label: Text("Free",
+                        style: TextStyle(
+                          color: !free ? Color(0xff0A6CFF) : Color(0xffffffff),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                        )),
+                    onSelected: (i) {
+                      setState(() {
+                        free = i;
+                      });
+                    },
+                    labelPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    disabledColor: Color(0xffE3EFFF),
+                    backgroundColor: Color(0xffE3EFFF),
+                    selectedColor: Color(0xff0A6CFF),
+                    selected: free,
                     checkmarkColor: Colors.white,
                   ),
                 ),
@@ -435,6 +486,8 @@ class _AddAlarmBottomSheetState extends State<AddAlarmBottomSheet> {
                           fortyfivePlus: fortyfivePlus.toString(),
                           dose1: dose1.toString(),
                           dose2: dose2.toString(),
+                          paid: paid.toString(),
+                          free: free.toString(),
                           isOn: "true",
                           radius: radius == "null"
                               ? null
