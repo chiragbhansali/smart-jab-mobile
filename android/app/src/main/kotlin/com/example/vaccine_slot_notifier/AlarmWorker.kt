@@ -35,7 +35,9 @@ data class Alarm(
     val radius: Int?,
     val ringtoneUri: String,
     val ringtoneName: String,
-    val vibrate: Boolean
+    val vibrate: Boolean,
+    val paid: Boolean,
+    val free: Boolean
 )
 
 class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
@@ -76,6 +78,26 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
                 db.execSQL("""ALTER TABLE Alarm ADD vibrate TEXT DEFAULT 'true'""")
                 db.version = 3;
             }
+            else if (db.version == 3) {
+                db.execSQL("""ALTER TABLE Alarm ADD paid TEXT DEFAULT 'false'""");
+                db.execSQL("""ALTER TABLE Alarm ADD free TEXT DEFAULT 'false'""");
+                db.version = 4;
+            }
+            /*if {db.version < 4} {
+                if (db.version == 1) {
+                    db.execSQL("""ALTER TABLE Alarm ADD radius INTEGER""")
+                }
+                else if (db.version == 2) {
+                    db.execSQL("""ALTER TABLE Alarm ADD ringtoneUri TEXT DEFAULT 'default'""")
+                    db.execSQL("""ALTER TABLE Alarm ADD ringtoneName TEXT DEFAULT 'default'""")
+                    db.execSQL("""ALTER TABLE Alarm ADD vibrate TEXT DEFAULT 'true'""")
+                }
+                else if (db.version == 3) {
+                    db.execSQL("""ALTER TABLE Alarm ADD paid TEXT DEFAULT 'false'""");
+                    db.execSQL("""ALTER TABLE Alarm ADD free TEXT DEFAULT 'false'""");
+                }
+                db.version = 4;
+            }*/
         } catch (e: SQLException) {
             //Log.d("AlarmWorker", "FAILED")
             return Result.success();
@@ -99,7 +121,9 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
                     cursor.getInt(12),
                     cursor.getString(13),
                     cursor.getString(14),
-                    toBool(cursor.getString(15))
+                    toBool(cursor.getString(15)),
+                    toBool(cursor.getString(16)),
+                    toBool(cursor.getString(17))
                 )
                 alarmsList = append(alarmsList, toAddAlarm)
                 cursor.moveToNext()
@@ -219,6 +243,9 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
                     val covishield = alarm.covishield
                     val dose1 = alarm.dose1
                     val dose2 = alarm.dose2
+                    val paid = alarm.paid
+                    val free = alarm.free
+
 
                     if (eighteenPlus && !fortyfivePlus) {
                         if (session.getInt("min_age_limit") == 45) {
@@ -240,6 +267,16 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
 
                     if (covishield && !covaxin) {
                         if (session.getString("vaccine") == "COVAXIN") {
+                            continue
+                        }
+                    }
+                    if (free && !paid) {
+                        if (center.getString("fee_type") == "Paid") {
+                            continue
+                        }
+                    }
+                    if (paid && !free) {
+                        if (center.getString("fee_type") == "Free") {
                             continue
                         }
                     }
