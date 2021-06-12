@@ -30,6 +30,7 @@ class HospitalScreen extends StatefulWidget {
   final String selectedDate;
   final dynamic lat;
   final dynamic long;
+  final List sessions;
   const HospitalScreen(
       {this.centerId,
       this.name,
@@ -38,7 +39,8 @@ class HospitalScreen extends StatefulWidget {
       this.vaccine,
       this.selectedDate,
       this.lat,
-      this.long});
+      this.long,
+      this.sessions});
 
   @override
   _HospitalScreenState createState() => _HospitalScreenState();
@@ -123,27 +125,6 @@ class _HospitalScreenState extends State<HospitalScreen> {
   }
 
   void getCenterData() async {
-    var data = await http.get(Uri.parse(
-        "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByCenter?center_id=${widget.centerId}&date=${widget.selectedDate}"));
-    var body = jsonDecode(data.body);
-    apiData = body;
-
-    if (body['centers'] == null) {
-      setState(() {
-        noSlots = true;
-        loading = false;
-      });
-      return;
-    }
-
-    if (body['centers'].length < 1) {
-      setState(() {
-        noSlots = true;
-        loading = false;
-      });
-      return;
-    }
-
     Map<dynamic, dynamic> slots = {};
 
     /*  body['centers'].forEach((center) {
@@ -157,8 +138,18 @@ class _HospitalScreenState extends State<HospitalScreen> {
         }
       });
     }); */
-    var centers = body['centers'];
-    centers['sessions'].forEach((session) {
+    // var centers = body['centers'];
+    // print(widget.sessions);
+
+    if (widget.sessions.length < 1) {
+      setState(() {
+        noSlots = true;
+        loading = false;
+      });
+      return;
+    }
+
+    widget.sessions.forEach((session) {
       if (slots[session['date']] != null) {
         slots[session['date']] =
             slots[session['date']] + session['available_capacity'];
@@ -166,6 +157,8 @@ class _HospitalScreenState extends State<HospitalScreen> {
         slots[session['date']] = session['available_capacity'];
       }
     });
+
+    print(slots);
 
     bool isNoSlots = true;
 
@@ -215,7 +208,7 @@ class _HospitalScreenState extends State<HospitalScreen> {
     super.initState();
     getCenterData();
     getSlotHistory();
-    addressFinal = capitalizeFirstofEach(widget.address.toLowerCase());
+    addressFinal = widget.address;
   }
 
   @override
@@ -381,7 +374,7 @@ class _HospitalScreenState extends State<HospitalScreen> {
                           SizedBox(
                             height: 10,
                           ),
-                          noHistory
+                          noSlots
                               ? NoSlots(false)
                               : ListView.builder(
                                   shrinkWrap: true,
@@ -556,15 +549,22 @@ class _NoDataState extends State<NoData> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 65,
+      height: 70,
       width: MediaQuery.of(context).size.width - 54,
       decoration: BoxDecoration(
           color: Color(0xffFFF3C4), borderRadius: BorderRadius.circular(8)),
       margin: EdgeInsets.only(top: 20),
       child: Center(
           child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Text("Slots Opening History Not available for 45+ slots"),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: Text(
+          "Slot Opening History Not available for 45+ slots",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Color(0xffDE911D),
+              fontWeight: FontWeight.w500,
+              fontSize: 16),
+        ),
       )),
     );
   }

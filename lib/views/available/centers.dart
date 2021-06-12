@@ -90,6 +90,7 @@ class _CentersAvailableSlotsState extends State<CentersAvailableSlots> {
       center['long'] = c['long'];
       center['fee'] = c['fee_type'];
       center['min_age'] = [];
+      center['sessions'] = c['sessions'];
 
       bool sessionNotFound = true;
 
@@ -495,6 +496,7 @@ class _CenterCardState extends State<CenterCard> {
                                   context,
                                   PageTransition(
                                       child: HospitalScreen(
+                                          sessions: widget.center['sessions'],
                                           centerId:
                                               "${widget.center['center_id']}",
                                           name: "${widget.center['name']}",
