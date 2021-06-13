@@ -581,7 +581,7 @@ class _CenterCardState extends State<CenterCard> {
                                               "${widget.center['mapsAddress']}, ${widget.center['address']}",
                                           age: widget.center['min_age'],
                                           vaccine:
-                                              "${widget.center['vaccine'][0]}${widget.center['vaccine'].substring(1).toLowerCase()} (${widget.center['fee']})",
+                                              "${widget.center['vaccine'][0][0]}${widget.center['vaccine'][0].substring(1).toLowerCase()} (${widget.center['fee']})",
                                           selectedDate: widget.selectedDate,
                                           lat: widget.center['lat'],
                                           long: widget.center['long']),

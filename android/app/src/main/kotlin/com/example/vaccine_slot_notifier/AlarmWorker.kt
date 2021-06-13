@@ -83,9 +83,9 @@ class AlarmWorker(appContext: Context, workerParams: WorkerParameters) :
                 db.execSQL("""ALTER TABLE Alarm ADD free TEXT DEFAULT 'false'""");
                 db.version = 4;
             }*/
-            if {
+            if (
                 db.version < 4
-            } {
+                ) {
                 if (db.version == 1) {
                     db.execSQL("""ALTER TABLE Alarm ADD radius INTEGER""")
                     db.execSQL("""ALTER TABLE Alarm ADD ringtoneUri TEXT DEFAULT 'default'""")
