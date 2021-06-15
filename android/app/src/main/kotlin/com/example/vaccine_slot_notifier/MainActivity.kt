@@ -3,7 +3,6 @@ package com.example.vaccine_slot_notifier
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.media.RingtoneManager
 import android.net.Uri
@@ -12,7 +11,7 @@ import androidx.work.*
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.lang.reflect.Method
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -98,6 +97,14 @@ class MainActivity : FlutterActivity() {
                     startActivity(cowinIntent)
                     result.success("")
                 }
+                "share" -> {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "Smart Jab")
+                        putExtra(Intent.EXTRA_TEXT, "Get vaccinated today! https://smartjab.in/android")
+                    }
+                    startActivity(Intent.createChooser(shareIntent, "Share via"))
+                }
                 else -> {
                     result.notImplemented()
                 }
@@ -112,7 +119,6 @@ class MainActivity : FlutterActivity() {
         if (fromAlarm != "TRUE") {
 
             val wm: WorkManager = WorkManager.getInstance(applicationContext)
-            wm.cancelAllWork()
 
             val constraints: Constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 

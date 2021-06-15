@@ -36,6 +36,34 @@ class _HomeTabState extends State<HomeTab> {
                   color: Color(0xff323F4B),
                   fontWeight: FontWeight.w500,
                   fontSize: 18)),
+          actions: [
+            PopupMenuButton(
+              icon: Icon(Icons.more_vert, color: Color(0xff323F4B)),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                    child: Row(
+                      children: [
+                        Icon(Icons.share_outlined,
+                            color: Color(0xff323F4B), size: 22),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text("Share",
+                            style: TextStyle(color: Color(0xff323F4B))),
+                      ],
+                    ),
+                    value: "share"),
+              ],
+              onSelected: (value) async {
+                if (value == "share") {
+                  const platform = const MethodChannel(
+                    'com.arnav.smartjab/flutter',
+                  );
+                  var result = await platform.invokeMethod("share");
+                }
+              },
+            )
+          ],
         ),
         body: LayoutBuilder(builder: (context, constraints) {
           return Container(

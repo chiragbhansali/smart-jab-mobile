@@ -132,7 +132,9 @@ class _NoAlarmsState extends State<NoAlarms> {
 class AlarmCard extends StatefulWidget {
   final Alarm alarm;
   final Function getAlarms;
+
   AlarmCard(Key key, this.alarm, this.getAlarms) : super(key: key);
+
   @override
   _AlarmCardState createState() => _AlarmCardState();
 }
@@ -141,6 +143,7 @@ class _AlarmCardState extends State<AlarmCard> {
   Alarm alarm;
   var ringtoneName = "";
   bool isVibrateChecked = false;
+
   bool toBool(String v) {
     return v == "true";
   }
